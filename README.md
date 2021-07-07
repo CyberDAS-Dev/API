@@ -5,7 +5,6 @@
   </a>
 
   <h3 align="center">CyberDAS API</h3>
-
   <p align="center">
     Программный интерфейс CyberDAS'a, проекта цифровизации общежития
     <br />
@@ -39,7 +38,7 @@
 </details>
 <br>
 
-<div style="text-align:center">
+<div align="center">
   <a href="https://www.python.org/">
     <img src="https://img.shields.io/static/v1?style=for-the-badge&message=Python&color=3776AB&logo=Python&logoColor=FFFFFF&label=" alt="Python">
   </a>
