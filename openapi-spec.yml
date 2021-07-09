@@ -1,0 +1,354 @@
+openapi: '3.0.2'
+
+info:
+  title: CyberDAS API
+  version: '0.1'
+
+servers:
+  - url: https://api.cyberdas.net/v1
+
+paths:
+
+  ################## Регистрация и аутентификация ##################
+  /signup:
+
+    post:
+      summary: Позволяет зарегистрировать новый аккаунт
+      security: []   # доступно без аутентификации
+
+      requestBody:
+        required: true
+        description: JSON-объект, содержащий данные для регистрации (почту, ФИО, ...)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+      
+      responses:
+        '200':
+          description: Письмо отправлено. Для регистрации нужно перейти по ссылке из письма.
+        '403':
+          description: Пользователь с такой почтой уже зарегистрирован.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  
+  /login:
+
+    post:
+      summary: Подтверждает идентичность пользователя, начинает сессию и возвращает аутентификационный куки
+      security: []   # доступно без аутентификации
+
+      requestBody:
+        required: true
+        description: JSON-объект, содержащий логин и пароль.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      
+      responses:
+        '200':
+          description: >
+            Успешная авторизация.
+            Идентификатор сессии возвращается в 'SESSIONID'-куки. Этот куки должен использоваться для дальнейших запросов.
+          headers: 
+            Set-Cookie:
+              schema: 
+                type: string
+                example: SESSIONID=abcde12345; Path=/; HttpOnly
+            XCSRF-token: 
+              schema:
+                type: string
+                example: WfF1szMUHhiokx9AHFply5L2xAOfjRkE
+        '403':
+          description: Такой пользователь отсутствует. Проверьте правильность данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /logout:
+
+    get:
+      summary: Заканчивает сессию пользователя
+      
+      responses:
+        '200':
+          description: Сессия успешно завершена.
+        '401':
+          $ref: '#/components/responses/UnathorizedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /me:
+
+    get:
+      summary: Возвращает информацию о пользователе
+      
+      responses:
+        '200':
+          description: Информация о пользователе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnathorizedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  ################## Логика очередей ##################
+  /queue:
+
+    get:
+      summary: Возвращает список всех доступных очередей и их описание
+
+      responses:
+        '200':
+          description: JSON-массив с очередями
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Queues'
+        '401':
+          $ref: '#/components/responses/UnathorizedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  
+  /queue/{queueName}:
+
+    get:
+      summary: Возвращает слоты в выбранной очереди в указанный промежуток дат
+
+      parameters:
+        - name: queueName
+          in: path
+          required: true
+          allowEmptyValue: false
+          description: Имя очереди
+          schema:
+            type: string 
+            example: "living"
+        - name: day
+          in: query
+          required: true
+          allowEmptyValue: false
+          description: Первый день для составления интервала дат
+          schema:
+            type: string
+            format: date
+            example: "2021-01-30"
+        - name: offset
+          in: query
+          required: true
+          allowEmptyValue: false
+          description: Длина интервала дат 
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 90
+            example: 4
+      
+      responses:
+        '200':
+          description: JSON-массив со слотами
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Slots'
+        '401':
+          $ref: '#/components/responses/UnathorizedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+    
+    post:
+      summary: Занять выбранный слот в выбранной очереди
+
+      parameters:
+        - name: queueName
+          in: path
+          required: true
+          allowEmptyValue: false
+          description: Имя очереди
+          schema:
+            type: string 
+            example: "living"
+      
+      requestBody:
+        required: true
+        description: JSON-объект, содержащий айди выбранного слота
+        content:
+          application/json:
+            schema:
+              type: integer
+      
+      responses:
+        '200':
+          description: Успешная запись
+        '401':
+          $ref: '#/components/responses/UnathorizedError'
+        '403':
+          description: Этот слот уже занят
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+
+components: 
+
+  schemas: 
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name: 
+          type: string
+        surname:
+          type: string
+        patronymic:
+          type: string
+        faculty:
+          type: string
+        createdAt:
+          type: string
+          format: date
+      required:
+        - id
+        - name
+        - surname
+        - patronymic
+        - faculty
+        - createdAt
+
+    Queue:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+      required:
+        - name
+        - description
+        - startDate
+        - endDate
+
+    Queues:
+      type: array
+      items:
+        $ref: '#/components/schemas/Queue'
+    
+    Slot:
+      type: object
+      properties:
+        id:
+          type: integer
+        queueName:
+          type: string
+        datetime:
+          type: string
+          format: date-time
+        free:
+          type: boolean
+      required:
+        - id
+        - queueName
+        - date
+        - free
+
+    Slots:
+      type: array
+      items:
+        $ref: '#/components/schemas/Slot'
+      minItems: 1
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+          format: password
+      required:
+        - email
+        - password
+
+    SignupRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        surname:
+          type: string
+        patronymic:
+          type: string
+        faculty:
+          type: string
+      required:
+        - email
+        - name
+        - surname
+        - faculty
+
+
+  responses:
+
+    UnexpectedError:
+      description: Непредвиденная ошибка
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    UnathorizedError:
+      description: Отсутствует право доступа к ресурсу
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+
+  securitySchemes:
+
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: SESSIONID
+
+
+
+# Для совершения всех действий требуется активная сессия, если не указано иное
+security:
+  - cookieAuth: []
