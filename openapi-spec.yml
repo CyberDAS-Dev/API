@@ -2,18 +2,27 @@ openapi: '3.0.2'
 
 info:
   title: CyberDAS API
-  version: '0.1'
+  version: '0.2'
+  contact:
+    email: api@cyberdas.net
 
 servers:
   - url: https://api.cyberdas.net/v1
 
+tags: 
+  - name: Аутентификация
+    description: 'Всё, что относится к аутентификации и управлению идентичностями'
+  - name: Очереди
+    description: 'Логика очередей и массового обслуживания'
+
 paths:
 
-  ################## Регистрация и аутентификация ##################
   /signup:
 
     post:
       summary: Позволяет зарегистрировать новый аккаунт
+      tags:
+        - Аутентификация
       security: []   # доступно без аутентификации
 
       requestBody:
@@ -26,7 +35,7 @@ paths:
       
       responses:
         '200':
-          description: Письмо отправлено. Для регистрации нужно перейти по ссылке из письма.
+          description: Письмо отправлено. Для подтверждения регистрации нужно перейти по ссылке из письма.
         '403':
           description: Пользователь с такой почтой уже зарегистрирован.
           content:
@@ -40,6 +49,8 @@ paths:
 
     post:
       summary: Подтверждает идентичность пользователя, начинает сессию и возвращает аутентификационный куки
+      tags:
+        - Аутентификация
       security: []   # доступно без аутентификации
 
       requestBody:
@@ -77,7 +88,9 @@ paths:
 
     get:
       summary: Заканчивает сессию пользователя
-      
+      tags:
+        - Аутентификация
+
       responses:
         '200':
           description: Сессия успешно завершена.
@@ -90,6 +103,8 @@ paths:
 
     get:
       summary: Возвращает информацию о пользователе
+      tags:
+        - Аутентификация
       
       responses:
         '200':
@@ -108,7 +123,9 @@ paths:
 
     get:
       summary: Возвращает список всех доступных очередей и их описание
-
+      tags:
+        - Очереди
+        
       responses:
         '200':
           description: JSON-массив с очередями
@@ -125,7 +142,9 @@ paths:
 
     get:
       summary: Возвращает слоты в выбранной очереди в указанный промежуток дат
-
+      tags:
+        - Очереди
+      
       parameters:
         - name: queueName
           in: path
@@ -170,7 +189,9 @@ paths:
     
     post:
       summary: Занять выбранный слот в выбранной очереди
-
+      tags:
+        - Очереди
+      
       parameters:
         - name: queueName
           in: path
@@ -224,13 +245,18 @@ components:
         createdAt:
           type: string
           format: date
+        email_verified:
+          type: boolean
+        verified:
+          type: boolean
       required:
         - id
         - name
         - surname
-        - patronymic
         - faculty
         - createdAt
+        - email_verified
+        - verified
 
     Queue:
       type: object
@@ -287,9 +313,6 @@ components:
           type: string
         message:
           type: string
-      required:
-        - code
-        - message
 
     LoginRequest:
       type: object
@@ -308,6 +331,8 @@ components:
       properties:
         email:
           type: string
+        password:
+          type: string
         name:
           type: string
         surname:
@@ -318,6 +343,7 @@ components:
           type: string
       required:
         - email
+        - password
         - name
         - surname
         - faculty

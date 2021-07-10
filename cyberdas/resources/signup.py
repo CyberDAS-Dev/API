@@ -31,7 +31,7 @@ class Signup(object):
         
         ### Регистрация
         try:
-        user = dbses.query(User).filter_by(email = data['email']).first()
+            user = dbses.query(User).filter_by(email = data['email']).first()
         except: 
             raise falcon.HTTPBadRequest
         if user is not None:

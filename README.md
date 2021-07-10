@@ -8,7 +8,7 @@
   <p align="center">
     Программный интерфейс CyberDAS'a, проекта цифровизации общежития
     <br />
-    <a href="https://github.com/CyberDAS-Dev/API"><strong>Документация »</strong></a>
+    <a href="https://api.cyberdas.net"><strong>Спецификация »</strong></a>
     <br />
     <br />
     <a href="https://github.com/CyberDAS-Dev/API/issues">Сообщить об ошибке</a>
@@ -156,7 +156,7 @@
 
 ## Контакты
 
-Иван Акостелов - ivanakostelov@gmail.com
+Команда API - api@cyberdas.net
 
 Ссылка на проект: [https://github.com/CyberDAS-Dev/API](https://github.com/CyberDAS-Dev/API)
 

@@ -1,0 +1,100 @@
+name: run-tests
+
+on:
+  pull_request: 
+  push:
+    branches-ignore: 
+      - main
+      - next
+    # Все пуши, попадающие в эти ветки, должны быть уже протестированы
+
+jobs:
+
+  build:
+    runs-on: [self-hosted, linux, X64]
+    steps:
+      - name: Change directory
+        run:
+          cd /usr/share/cyberdas
+      - name: Cleanup
+        run: |
+          if [ -d "cyberdas-test" ]
+          then
+            rm -rf cyberdas-test
+
+            PGPASSWORD=${{ secrets.DB_PASS_TEST }} psql \
+            -U ${{ secrets.DB_USER_TEST }} \
+            -d ${{ secrets.DB_NAME_TEST }} \
+            -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+          fi
+      - name: Clone repo
+        run: 
+          git clone git@github.com:$GITHUB_REPOSITORY.git --branch ${GITHUB_REF##*/} --single-branch cyberdas-test
+      - name: Setup config
+        working-directory: ./cyberdas-test
+        run: |
+          python3 -c "
+          with open('cfg.ini', 'r+') as f:
+              d = f.read()
+
+              d = d\
+              .replace('DB_URL', '"'${{ secrets.DB_URL_TEST }}'"')\
+              .replace('DB_USER', '"'${{ secrets.DB_USER_TEST }}'"')\
+              .replace('DB_PASS', '"'${{ secrets.DB_PASS_TEST }}'"')\
+              .replace('DB_NAME', '"'${{ secrets.DB_NAME_TEST }}'"')\
+              .replace('SEC_SIGNUP', '"'${{ secrets.SEC_SIGNUP_TEST }}'"')\
+              .replace('SEC_AUTH', '"'${{ secrets.SEC_AUTH_TEST }}'"')\
+              .replace('SALT_SIGNUP', '"'${{ secrets.SAL_SIGNUP_TEST }}'"')\
+              .replace('EMAIL_FROM', '"'${{ secrets.EMAIL_FROM }}'"')\
+              .replace('EMAIL_SERVER', '"'${{ secrets.EMAIL_SERVER }}'"')\
+              .replace('EMAIL_PORT', '"'${{ secrets.EMAIL_PORT }}'"')\
+              .replace('EMAIL_LOGIN', '"'${{ secrets.EMAIL_LOGIN }}'"')\
+              .replace('EMAIL_PASS', '"'${{ secrets.EMAIL_PASS }}'"')
+              
+              f.seek(0)
+              f.write(d)
+              f.write('''
+          [cdci]
+          build = test
+          ''')
+              f.truncate()
+              f.close()"
+      - name: Install app
+        working-directory: ./cyberdas-test
+        run: |
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip setuptools wheel
+          pip install -e ".[testing]"
+  
+  test:
+    needs: build
+    runs-on: [self-hosted, linux, X64]
+    steps:
+      - name: Initialize DB
+        working-directory: ./cyberdas-test
+        run: |
+          source .venv/bin/activate
+          alembic -c cfg.ini upgrade head
+          initialize_db
+      - name: Run tests
+        id: testStep
+        working-directory: ./cyberdas-test
+        run: |
+          source .venv/bin/activate
+          pytest -W error
+      - name: Debug test failure
+        working-directory: ./cyberdas-test
+        if: ${{ always() && steps.testStep.outcome == 'failure' }}
+        run: |
+          source .venv/bin/activate
+          pytest -qs --no-summary
+      - name: Wipe files and DB
+        if: ${{ always() }}
+        run: |
+          rm -rf cyberdas-test
+
+          PGPASSWORD=${{ secrets.DB_PASS_TEST }} psql \
+          -U ${{ secrets.DB_USER_TEST }} \
+          -d ${{ secrets.DB_NAME_TEST }} \
+          -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
