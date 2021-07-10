@@ -8,18 +8,18 @@ on:
 jobs:
   build:
     runs-on: [self-hosted, linux, X64]
+    defaults:
+      run:
+        working-directory: /usr/share/cyberdas
     steps:
-      - name: Change directory
-        run:
-          cd /usr/share/cyberdas
       - name: Cleanup
         run: |
           rm -rf cyberdas-prod
       - name: Clone repo
         run: |
-          git clone git@github.com:$GITHUB_REPOSITORY.git --branch ${GITHUB_REF##*/} --single-branch cyberdas-prod
+          git clone https://github.com/$GITHUB_REPOSITORY.git --branch ${GITHUB_REF##*/} --single-branch cyberdas-prod
       - name: Set secrets
-        working-directory: ./cyberdas-prod
+        working-directory: /usr/share/cyberdas/cyberdas-prod
         run: |
           python3 -c "
           with open('cfg.ini', 'r+') as f:
@@ -32,12 +32,13 @@ jobs:
               .replace('DB_NAME', '"'${{ secrets.DB_NAME_PROD }}'"')\
               .replace('SEC_SIGNUP', '"'${{ secrets.SEC_SIGNUP_PROD }}'"')\
               .replace('SEC_AUTH', '"'${{ secrets.SEC_AUTH_PROD }}'"')\
-              .replace('SALT_SIGNUP', '"'${{ secrets.SAL_SIGNUP_PROD }}'"')\
+              .replace('SALT_SIGNUP', '"'${{ secrets.SALT_SIGNUP_PROD }}'"')\
               .replace('EMAIL_FROM', '"'${{ secrets.EMAIL_FROM }}'"')\
               .replace('EMAIL_SERVER', '"'${{ secrets.EMAIL_SERVER }}'"')\
               .replace('EMAIL_PORT', '"'${{ secrets.EMAIL_PORT }}'"')\
               .replace('EMAIL_LOGIN', '"'${{ secrets.EMAIL_LOGIN }}'"')\
-              .replace('EMAIL_PASS', '"'${{ secrets.EMAIL_PASS }}'"')\
+              .replace('EMAIL_PASS', '"'${{ secrets.EMAIL_PASS }}'"')
+
               f.seek(0)
               f.write(d)
               f.write('''
@@ -47,14 +48,14 @@ jobs:
               f.truncate()
               f.close()"
       - name: Install app
-        working-directory: ./cyberdas-prod
+        working-directory: /usr/share/cyberdas/cyberdas-prod
         run: |
           python3 -m venv .venv
           source .venv/bin/activate
           pip install --upgrade pip setuptools wheel
           pip install -e "."
       - name: Apply DB migrations
-        working-directory: ./cyberdas-prod
+        working-directory: /usr/share/cyberdas/cyberdas-prod
         run: |
             source .venv/bin/activate
             alembic -c cfg.ini upgrade head
@@ -64,7 +65,7 @@ jobs:
     runs-on: [self-hosted, linux, X64]
     steps:
       - name: Move new API specification
-        working-directory: ./cyberdas-prod
+        working-directory: /usr/share/cyberdas/cyberdas-prod
         run: |
           mv openapi-spec.yml cyberdas/static/openapi-spec.yml
       - name: Restart service
