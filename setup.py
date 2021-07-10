@@ -12,11 +12,16 @@ requires = [
     'gunicorn==20.1.*',
     'alembic==1.5.*',
     'SQLAlchemy==1.3.*',
+    'sqlalchemy_utils==0.37.*',
+    'passlib==1.7.*',
+    'itsdangerous==2.0.*',
+    'jinja2==3.0.*'
 ]
 
 tests_require = [
     'pytest>= 3.7.4, <=6.1.2',
     'pytest-cov',
+    'schemathesis'
 ]
 
 setup(

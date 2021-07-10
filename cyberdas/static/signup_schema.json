@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$ref": "#/definitions/SignupRequest",
+    "definitions": {
+        "SignupRequest": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "surname": {
+                    "type": "string"
+                },
+                "patronymic": {
+                    "type": "string"
+                },
+                "faculty": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "email",
+                "faculty",
+                "name",
+                "password",
+                "surname"
+            ],
+            "title": "SignupRequest"
+        }
+    }
+}
