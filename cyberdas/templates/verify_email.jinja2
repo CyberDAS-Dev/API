@@ -1,459 +1,127 @@
 <!doctype html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width" />
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>Simple Transactional Email</title>
     <style>
-      /* -------------------------------------
-          GLOBAL RESETS
-      ------------------------------------- */
-      
-      /*All the styling goes here*/
-      
-      img {
-        border: none;
-        -ms-interpolation-mode: bicubic;
-        max-width: 100%;
-        margin-bottom: 30px; 
+    /* -------------------------------------
+        INLINED WITH htmlemail.io/inline
+    ------------------------------------- */
+    /* -------------------------------------
+        RESPONSIVE AND MOBILE FRIENDLY STYLES
+    ------------------------------------- */
+    @media only screen and (max-width: 620px) {
+      table[class=body] h1 {
+        font-size: 28px !important;
+        margin-bottom: 10px !important;
       }
+      table[class=body] p,
+            table[class=body] ul,
+            table[class=body] ol,
+            table[class=body] td,
+            table[class=body] span,
+            table[class=body] a {
+        font-size: 16px !important;
+      }
+      table[class=body] .wrapper,
+            table[class=body] .article {
+        padding: 10px !important;
+      }
+      table[class=body] .content {
+        padding: 0 !important;
+      }
+      table[class=body] .container {
+        padding: 0 !important;
+        width: 100% !important;
+      }
+      table[class=body] .main {
+        border-left-width: 0 !important;
+        border-radius: 0 !important;
+        border-right-width: 0 !important;
+      }
+      table[class=body] .btn table {
+        width: 100% !important;
+      }
+      table[class=body] .btn a {
+        width: 100% !important;
+      }
+      table[class=body] .img-responsive {
+        height: auto !important;
+        max-width: 100% !important;
+        width: auto !important;
+      }
+    }
 
-      body {
-        background-color: #ffffff;
-        font-family: sans-serif;
-        -webkit-font-smoothing: antialiased;
-        font-size: 14px;
-        line-height: 1.4;
-        margin: 0;
-        padding: 0;
-        -ms-text-size-adjust: 100%;
-        -webkit-text-size-adjust: 100%; 
+    /* -------------------------------------
+        PRESERVE THESE STYLES IN THE HEAD
+    ------------------------------------- */
+    @media all {
+      .ExternalClass {
+        width: 100%;
       }
-
-      table {
-        border-collapse: separate;
-        mso-table-lspace: 0pt;
-        mso-table-rspace: 0pt;
-        width: 100%; }
-        table td {
-          font-family: sans-serif;
-          font-size: 14px;
-          vertical-align: top; 
+      .ExternalClass,
+            .ExternalClass p,
+            .ExternalClass span,
+            .ExternalClass font,
+            .ExternalClass td,
+            .ExternalClass div {
+        line-height: 100%;
       }
-
-      /* -------------------------------------
-          BODY & CONTAINER
-      ------------------------------------- */
-
-      .body {
-        background-color: #ffffff;
-        width: 100%; 
+      .apple-link a {
+        color: inherit !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+        text-decoration: none !important;
       }
-
-      /* Set a max-width, and make it display as block so it will automatically stretch to that width, but will also shrink down on a phone or something */
-      .container {
-        display: block;
-        margin: 0 auto !important;
-        /* makes it centered */
-        max-width: 580px;
-        padding: 10px;
-        width: 580px; 
+      #MessageViewBody a {
+        color: inherit;
+        text-decoration: none;
+        font-size: inherit;
+        font-family: inherit;
+        font-weight: inherit;
+        line-height: inherit;
       }
-
-      /* This should also be a block element, so that it will fill 100% of the .container */
-      .content {
-        box-sizing: border-box;
-        display: block;
-        margin: 0 auto;
-        max-width: 580px;
-        padding: 10px; 
+      .btn-primary table td:hover {
+        background-color: #34495e !important;
       }
-
-      /* -------------------------------------
-          HEADER, FOOTER, MAIN
-      ------------------------------------- */
-      .main {
-        background: #ffffff;
-        border-radius: 3px;
-        width: 100%; 
+      .btn-primary a:hover {
+        background-color: #34495e !important;
+        border-color: #34495e !important;
       }
-
-      .wrapper {
-        box-sizing: border-box;
-        padding: 20px; 
-      }
-
-      .content-block {
-        padding-bottom: 10px;
-        padding-top: 10px;
-      }
-
-      .footer {
-        clear: both;
-        margin-top: 10px;
-        text-align: center;
-        width: 100%; 
-      }
-        .footer td,
-        .footer p,
-        .footer span,
-        .footer a {
-          color: #999999;
-          font-size: 12px;
-          text-align: center; 
-      }
-
-      /* -------------------------------------
-          TYPOGRAPHY
-      ------------------------------------- */
-      h1,
-      h2,
-      h3,
-      h4 {
-        color: #000000;
-        font-family: sans-serif;
-        font-weight: 400;
-        line-height: 1.4;
-        margin: 0;
-        margin-bottom: 30px; 
-      }
-
-      h1 {
-        font-size: 35px;
-        font-weight: 300;
-        text-align: center;
-        text-transform: capitalize; 
-      }
-
-      p,
-      ul,
-      ol {
-        font-family: sans-serif;
-        font-size: 14px;
-        font-weight: normal;
-        margin: 0;
-        margin-bottom: 25px; 
-      }
-        p li,
-        ul li,
-        ol li {
-          list-style-position: inside;
-          margin-left: 5px; 
-      }
-
-      a {
-        color: #3498db;
-        text-decoration: underline; 
-      }
-
-      /* -------------------------------------
-          BUTTONS
-      ------------------------------------- */
-      .btn {
-        box-sizing: border-box;
-        width: 100%; }
-        .btn > tbody > tr > td {
-          padding-bottom: 25px; }
-        .btn table {
-          width: auto; 
-      }
-        .btn table td {
-          background-color: #ffffff;
-          text-align: center; 
-      }
-        .btn a {
-          background-color: #ffffff;
-          border: solid 1px #3192C9;;
-          border-radius: 5px;
-          box-sizing: border-box;
-          color: #3498db;
-          cursor: pointer;
-          display: inline-block;
-          font-size: 14px;
-          font-weight: bold;
-          margin: 0;
-          padding: 12px 25px;
-          text-decoration: none;
-          text-transform: capitalize; 
-      }
-
-      .btn-primary table td {
-        background-color: #3498db; 
-      }
-
-      .btn-primary a {
-        background-color: #3498db;
-        border-color: #3498db;
-        color: #ffffff; 
-      }
-
-      /* -------------------------------------
-          OTHER STYLES THAT MIGHT BE USEFUL
-      ------------------------------------- */
-      .last {
-        margin-bottom: 0; 
-      }
-
-      .first {
-        margin-top: 0; 
-      }
-
-      .align-center {
-        text-align: center; 
-      }
-
-      .align-right {
-        text-align: right; 
-      }
-
-      .align-left {
-        text-align: left; 
-      }
-
-      .clear {
-        clear: both; 
-      }
-
-      .mt0 {
-        margin-top: 0; 
-      }
-
-      .mb0 {
-        margin-bottom: 0; 
-      }
-
-      .preheader {
-        color: transparent;
-        display: none;
-        height: 0;
-        max-height: 0;
-        max-width: 0;
-        opacity: 0;
-        overflow: hidden;
-        mso-hide: all;
-        visibility: hidden;
-        width: 0; 
-      }
-
-      .powered-by a {
-        text-decoration: none; 
-      }
-
-      hr {
-        border: 0;
-        border-bottom: 1px solid #f6f6f6;
-        margin: 20px 0; 
-      }
-
-      /* -------------------------------------
-          RESPONSIVE AND MOBILE FRIENDLY STYLES
-      ------------------------------------- */
-      @media only screen and (max-width: 620px) {
-        table[class=body] h1 {
-          font-size: 28px !important;
-          margin-bottom: 10px !important; 
-        }
-        table[class=body] p,
-        table[class=body] ul,
-        table[class=body] ol,
-        table[class=body] td,
-        table[class=body] span,
-        table[class=body] a {
-          font-size: 16px !important; 
-        }
-        table[class=body] .wrapper,
-        table[class=body] .article {
-          padding: 10px !important; 
-        }
-        table[class=body] .content {
-          padding: 0 !important; 
-        }
-        table[class=body] .container {
-          padding: 0 !important;
-          width: 100% !important; 
-        }
-        table[class=body] .main {
-          border-left-width: 0 !important;
-          border-radius: 0 !important;
-          border-right-width: 0 !important; 
-        }
-        table[class=body] .btn table {
-          width: 100% !important; 
-        }
-        table[class=body] .btn a {
-          width: 100% !important; 
-        }
-        table[class=body] .img-responsive {
-          height: auto !important;
-          max-width: 100% !important;
-          width: auto !important; 
-        }
-      }
-
-      /* -------------------------------------
-          PRESERVE THESE STYLES IN THE HEAD
-      ------------------------------------- */
-      @media all {
-        .ExternalClass {
-          width: 100%; 
-        }
-        .ExternalClass,
-        .ExternalClass p,
-        .ExternalClass span,
-        .ExternalClass font,
-        .ExternalClass td,
-        .ExternalClass div {
-          line-height: 100%; 
-        }
-        .apple-link a {
-          color: inherit !important;
-          font-family: inherit !important;
-          font-size: inherit !important;
-          font-weight: inherit !important;
-          line-height: inherit !important;
-          text-decoration: none !important; 
-        }
-        #MessageViewBody a {
-          color: inherit;
-          text-decoration: none;
-          font-size: inherit;
-          font-family: inherit;
-          font-weight: inherit;
-          line-height: inherit;
-        }
-        .btn-primary table td:hover {
-          background-color: #286f99; !important; 
-        }
-        .btn-primary a:hover {
-          background-color: #286f99 !important;
-          border-color: #286f99 !important; 
-        } 
-      }
+    }
 
     </style>
   </head>
-  <body class="">
-    <span class="preheader">This is preheader text. Some clients will show this text as a preview.</span>
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
+  <body class="" style="background-color: #f6f6f6; font-family: sans-serif; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;">
+    <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">Подтверждение регистрации на сайте CyberDAS.</span>
+    <table border="0" cellpadding="0" cellspacing="0" class="body" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-color: #f6f6f6;">
       <tr>
-        <td>&nbsp;</td>
-        <td class="container">
-          <div class="content">
+        <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;">&nbsp;</td>
+        <td class="container" style="font-family: sans-serif; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; max-width: 580px; padding: 10px; width: 580px;">
+          <div class="content" style="box-sizing: border-box; display: block; Margin: 0 auto; max-width: 580px; padding: 10px;">
 
             <!-- START CENTERED WHITE CONTAINER -->
-            <table role="presentation" class="main">
+            <table class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 3px;">
 
               <!-- START MAIN CONTENT AREA -->
               <tr>
-                <td class="wrapper">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                <td class="wrapper" style="font-family: sans-serif; font-size: 14px; vertical-align: top; box-sizing: border-box; padding: 20px;">
+                  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
                     <tr>
-                      <td>
-                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAArkAAABOCAYAAAAkVg48AAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
-                        AXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAABTeSURBVHgB7d15cBv3dQfwRwLETYIkwPuURMqW
-                        rMOiZFmmFdd2rcRxJuk/mdROWqdO02QmtuN4Jp1O0s6knXaSadLpNJnaTWu7V5pGnjatHTu+LVmx
-                        LFmyLNGiZB287xMEiBsgQOb3NpFFUeTugsCC4OL7mcH40JLgsRC++/b93q9g149OLBAAAAAAgI4U
-                        EgAAAACAziDkAgAAAIDuIOQCAAAAgO4g5AIAAACA7iDkAgAAAIDuIOQCAAAAgO4g5AIAAACA7iDk
-                        AgAAAIDuIOQCAAAAgO4g5AIAAACA7hgJADTntBhpT72Ttlc76DNbK8hiTO36MhxP0jsDPvpVn5fO
-                        jYdoMhSnhYXc25H7L+7eSPfd6JY95lCPh753uJ9C4nsCeTXFZvr5H+6kTBqajdIHYwF6/vwUDXgj
-                        FEzh98DncVtdCe2qLRbncSWZDAWUCn6uX/V66figjzpGA+QJz6n+WJvJQDuri8XrqIQ+Jc6xEkvq
-                        b18vXZqm94dnxfcfpLFAbr6GACBzEHIBNFRYUEC7xZvy53fV0G4RDIyFqYWCK/gN/kCrS3rwG/Qv
-                        Ppygly95CCBVDU6L9DjQ4qJDvTN0sGOcuqbDsh8jTmO6uaaEHtxdS7tqHGQyru4moEOcx3wRdE9r
-                        uRRy//3UCHWI81nJjppi+uz2Ktrf7BQXiAZarftucEsP/n6fOz9JL1yYosQ8gi6AXiHkAmjEIALt
-                        J8Ub6ldvradSq5EMBasLuEvtENXgzW4b2YoM9OplT0qVOIArzCKo3isumja7bPTDo4N0RoTO5DKV
-                        zQJx3t61sYwevb2R3PaijJzHJkMh3SIu/raJc/n7R/ql6m40Mb/sc/P5/p0Dm6giQ8/NWsXr55H2
-                        RqpwmOi/zoxJd0oAQH/QkwugkZuq7FLAddky9+bM+FNZiwrpT8Tn3tvglKrFAKvBIXKTCLlfa2+g
-                        pjLLssfwBdXD4s+rRCDM7HlcIF2offmWOtopKrXLaS610OMfa6LqDD8349fQ/TurpYp2USFeQwB6
-                        hJALoIHaEjN94eYaKeBqpcRspC/uqZWqawDpuMFtpz/YVSMFz8X4PH5InGPcG6yVuhILfUkE3aUX
-                        axyAHxCvoU0uK2mFe+Mf2FUtAr52zwEAawchF0ADG8SbJt+O1VqrqMK11RYTQDo4X+5tdFLzkmru
-                        RnEe79X4PObn5gWZ28Sdj8UaRRX37payjFdwl2p0Wugu8TwAoD8IuQAa2FVXTJai1S+QScVtzaUE
-                        kC6rqGq2Nzmv+X/7N5Rm7Tz+9NaKa/6bWxhs2XoNNeI1BKBHCLkAGthek73qapOoRFXaTQSQDqsI
-                        lFsqHNdMANmbxfDHvcEu29W10DdV2ylbKsTrp65Eu5YMAFgbCLkAGiizZG9widFQSFZTdipeoG9c
-                        OTUvGg/mtmav35snLjjMV5+vNIvPzbnejtcQgO5ghBiABgwqVmuP+mP0j8cG6Uifb9mh9DtqHPRn
-                        d26Q+nvlcOXNYsT1qh6NBWLU/uRJStcnNrukCQlum3zFv6DwN4HvCqOKzR6GZ6P05PGhFc/j25tL
-                        pU1CnAoXfkvPYzW9uMFYkv7+aD+90TWz7LzbjeVW+sb+JmkDCTm86M1uwtshgN7gnRFgjbx22UNv
-                        9XpX3HXprLTpwxQBpOtIn5cOdXtJCy9enJI9j9/p90khVAu8C+ArlzwrbujQOxOhZ89OEADkJ4Rc
-                        gDUyHY4rHxNSPgZAyVxygabCMdJCnyeqeMx4QPmY1eBCs1K12RvBawggXyHkAuQwbDgKmbKg0ck0
-                        r+IsnSdt8JbZd2woU9UeBAD5ByEXAAByjic8p3gM9/l+ZW893bmx7LqNLAAAEHIBACDn9M2EFY/h
-                        BWO8aQQv0Ly1oWTVFV2ucifntao3A8BawXJSAADIOR2jAdXHOkwGeuz2Jnr6vWF6q8dLyUW9GaOz
-                        cXrkuYuyHx9JJKnPGyEA0BeEXAAAyDkXp8L08qVp+uQNblXHN5VZ6FuiosvV3MM9M9JiO+aLztHp
-                        UeXWBwDQH7QrAABAzokl5unVrmkKxJKqP8YmKrpf29cgLUZDjy4AoJILkMMmg3E6MyJ/23ZgNkLj
-                        /qvjoZrLrFRmk39p8xD9rmn5nsdis5Fa3PIbUbDO8SAlkuqX7jvE591W7aB4Ul0PpDecoFlRjfNG
-                        ErQaJeL53A4TOc0GohRzTyiepCnxO1jtc/PPsNRqJJe1SNpoQcmC+JGMBmLS7/2KXXXKW0T3eiLi
-                        Z7S6rzFdW6vsFJ6TD6L1JRZK1fzCAp0c9NP33+qjb/5Os+JmEldUit/1lYrum90zlJzHjBKAfIWQ
-                        C5DDzokA+fDzF1L6mNuaSunR9gbZY8ZFkPrcf3eKcLpy0DzQ6qJv3tEk+3l417bPH+ykVIad7a13
-                        Sg+1Bn1RKWi+3uWhly57ZL/mxTgU3Xejm/Y1Oqmx1EoVdhOlui5pQjzvpPhZ8WYH/3d+QlQX1X2f
-                        RYYCuqfFJa36by63Up0IeWqem6uXf/VGz0cht6bYTE/83hbZj+Fw++1XuunMqJ/WwkO766SHVt7s
-                        mZEu2h5sqyW33aTqY7ii+2h7oxRw+XeHoAuQnxByAXTmNXGL9yt768gss9VvlcNMO6rtdHqFKjFX
-                        IO/YUEpKuPcxntB2VTqvnufHjppiurXBST87Oy6F/5XwivvWChs9dnsj3VhhT2vL4ypRFeTHjZUO
-                        aSbrzzrG6ex44KN+z6X4FnmT+Fq/dEudtJ2tRYRd3DZP3wsXpqW7D4/tb1Jd0XXZiqTFaLYiA718
-                        eTqluw0AoA/oyQXQGU9oji4ptCJw7tpdVyIFwuXcIEJiU5l8q0IglqCj/T7KFq6O3tVSLqrLzdRQ
-                        uvLt75trHfRtcbv6ZhGK0wm4S5+7XVTI/1TcNm+rXbl9oLnMQl8X4fouUcG1iudGwM0MrnC/Iqr4
-                        z7w3ktIugG57EX1ZXPBhwwiA/ISQC6BDxwa8Uk+jnJuqHVKVcinOZTtFQORKmJzzE0FxO1+brWLl
-                        bHbbpFvR3Ou6lN1soIfbG6jFZSMtNP62Suta5rY5B+HP7aymW+pLEKg08uKFKXrq5HBKQZfPY2wY
-                        AZCfEHIBdOj8eIgmFYLApnIbbSy/vlrLrQp7RFAzygS1xPwCnRr202RwbUYzcZBsbywlw5LQ8vs7
-                        qmlLhYO0zDJbKh302W1V11XBuQf3460uBFwNRUVFl1sXnnlvlGYj6s69xRtG8HmDoAuQPxByAXSI
-                        d4tSmp5QZi2iHdXX33p3ipC7pdIu+7EcNjpFkFaqFmuF+435FjRvAnAFfz/7m5X7iNPF4X9PfTG5
-                        F1W6HaKC/LubyqUWBdDeq5dF0D01ktJECT5XHrmtgfY2IOgC5Av8jQygQzORBJ0YmpU9hguOd7Zc
-                        36v4mZsqyWSQ/6uh2xOmC5NBWkv7mkqpeFHLAlfrKlSuvk8XL2jbsKgKzs/bWKY8bg0ygy+y/rdz
-                        kn5wpJ/8MfVBt8Vto7+8Z6PUX12IoAugewi5ADqlNF+X8YiqRufVRVyWIgPdKipdSo72eaWWhbVk
-                        MhRQlf1qNdUl/p0rqtnAFwZ1TvNH/+0wGaVFTpBdxwdn6dkPxlXPXGZOSxF9vf1KRZcAQMcwQgwg
-                        h/Ft+eUWWC3Go5F84rbt0lmgfTMR+nAyRFtlWg/41vuntlTQE8eHaGFhgXZWO0R4kx/czxszHO7x
-                        LvtnY4GYqnAth8NrY5lF6g1WUmq9WrnlSQpmg/J1O29c0CMq0YkV9i/gubZlVuXndtmuPjcvOlMz
-                        yYGnBPDc3+AKu3jNzc9LM4HXE/5Z+qPym0HwBg2LLwoyJSJ+l/92alSc/0l6+LZ6aVyYGjyd4zui
-                        ovs3h/ro2MCsdO4DgP4g5ALkMN7tileGyxnxR+mpEyNSeFrqUPeMbMiVnqO2mMqtBgrF56V/Nxvk
-                        y1sfToRWvEXMI56eoRFKB7dKfLGthr7QVisFXtljjamV4jhkPikC/YsXp5ed78sXFR/f7BKVvkay
-                        m+QDkznF/tu4uBg5KKqO/Fir3cm08OMTw/SOwii5B26uliZiaOX/z01QqcVA9++sVnVxxLii+/j+
-                        JvJFeqRJIQCgP2hXAMhhXJni/k+5R6vLTtYVKljvj/hpKixfGawrMdPGcpu0m9SOWodsr2JUVM5O
-                        ic/J291qhW89v3RpWqoYZ9qwuCA4OTS74gYWHILf6fNJFelMmwrF6EjvjK4Cbi452DFOT58cuWZL
-                        ZCW14tz/6r56qW0HAPQHIRdAx3j73oGZqOwx3MfKM3M3uqy02S1f9Z0Oz9HZsfTaEdQIiTCtxQ1k
-                        3qlsTmHnq2gyKYVdLcSxvaxmIuJ39j+dE1KlPJDCYjTeNGSfij50AFh/0K4AoGOBWJI+FLdieXOH
-                        ohVu/XPldk9didSnqNTTyC0RXdMRAtDaN/Y3UYtbfmIFbyv9887Ja/7f8x9OSf98aE+tqtYF7ku/
-                        c1M5PXdhGr25ADqDkAugYzzH9q0+L316a6XsYqq2OnWVLO69TGUlO8BqtbptUo+4nOXG2PFiNK7m
-                        cm/3g201ZDMpL0bjLayLxR0NP1pJAHQF7QoAOtfjidCYP0rpCsaTdHrUTwDrAbcu/LRjTJqmoYRH
-                        wpVZUPMB0BuEXACdmxOV12ODs5QuXjQ1GVhf4620lEji1nYuuzJe7D9Pjyoeyy0L5bbsbCQCANmD
-                        S1eAHGYszMy0el4sFownpE0LVoPHX50dC1IsS8GuSNxqXqs5/bHEAv3LiWGqcMiHnj7P+ulN5p+l
-                        yaC/moaa76lzDOPBAPIVQi7AGrljQxkd7ffRVGhu2QUvDpOB9jWWUib0eyPUMRqk/c2r+3w8peHM
-                        qF/q8dUaz8Y90OKS5phmWlOZRerzfKNnZsVKLG+q8d7w+mrLMChcDPGWx3y+6c2umt8smByeja34
-                        Grp9Q2ZeQwCw/iDkAqyR3XUl9N1PtNKAL0LLZcfKYhNtryqmTPCGE3RuPEjtTU7ZObgr4V2tJlS0
-                        Ktx3o5vaatMbx8RTIDjcK20EwVJtGbAaDfT4x5qovblsxVm5avFGG8cGfbTWeKc13jzj3s2uFY/h
-                        Xdx4prLebBDfF7+GumfClFzmXODFltuqlV9DfPEWnsOiMwC9QcgF0EA4rhyguPq2tcouPdLBM12V
-                        5oImxZs4LxrzR6sVtwlezhvdHppTMeOVAy4H3WwJxK5uGMGhNSG+RqUWDx4rdU9LOaXLG53LiZDL
-                        O6/trs/MnFfpZ5gjvcZRlQvGNrms0iMdfJEZ1HCDEwBYG1h4BqABrs5mCwdcX0S5CtXridBUKPWF
-                        Y/z5383AwrVM400dxgJXQ+6MqFYHY9kLKgVr1jWsDb4Q4mp9NEdGxI1mcZEjT2DgjU4AQF8QcgE0
-                        cGkynJX+VdYtwquaMUl8zNt9XkrV2fEgReZybzZu13SIfIuCyVgwRj7MOV01ruKeGpmlXNkP4fx4
-                        IGubM5wc8lMsB89xAEgPQi6ABt7u99LQbPqzaZVwq8LRfvXB9diAj6Ip9KLy+LHVBGOt8ff9erfn
-                        mlvMY/6YqDivffvAetU7E8mpBXenR4Pijoj2ryG+U3F8AOcNgB4h5AJoYMQfpZcveqRb6lriXtmO
-                        0YDq40cDMeryhFQfPyKC48Up9cdnS5cnTK9d9ki32Bf7yekxcdsZs3xTxRczBz+YyKmKvS8yJ23m
-                        EEto9zXx6XO41yvuVqh/DQHA+oGQC6ABDrfPdo7ToZ7rg1imHO6ZoadOjkiLrdQKRJN0ejigupXi
-                        lKjs9Uzn1jzYQVHd++6hXvIu04fsFcHoB0f6pYsMUCcqgu0/nxgW1czcqtjz9tGviwuZn5wZTekc
-                        TwUvxnz65LCo5mLRGYAeIeQCaIR7/P7p3WGp4hjP8GKe0yN++vG7QzQZTK1qyYH73ERQde8qH5vM
-                        lSZN4cJkkH74zgD1e1cOse8O+MUxgzQRREVXSTiepGfPjtMvLkxROAd7UnkTkoMdE/TLS1Oq+s5T
-                        +bwnh2bpH94eoOkQFpwB6BVGiAFoiEPoX7/ZS292z9D9O6up0mGiOqeZDKuYVTsRiEkbR/zrqRF6
-                        b8i/6vB5bixIQ6IaWm6V32yBexUPi697rXnDczQrvpbXujz009NjiqPM5ubn6WifjzrHztEf7amj
-                        trpiqrSbqMRspAJ9DURYFQ54nnBcmpv8xPHUL5SyjcPt3x7up5cvTtMfi99nVbGZ3OL3aStKvUbD
-                        m5r4xd2M/zg9Kt0JAQB9K9j1oxPYgB0gCyziTblKhNwb3HYyGlJLW9z+MOSL0NBsjEJpzvM0Ggrp
-                        7+5rpb0NTtnjXhDVve8d7qNU8G5iNSVmyiQO5BzEVluZ5YDLO365xc++MIMhd1BUk7nSzRxmg+KO
-                        YvHEAh0f9KX0+1PzeVPFz8/tHN0q2lDUzDzmuwrjCuO+GsSF3fYa+U0ZuPeW22NmZe4y8AxkPr82
-                        lVvJZjJQqrqnw1KfeQgzcQHyAkIuQJ5pE0H0W3dvpDqZMBpJJOnPX+nOyfm4AAAAaqAnFyCP8Ja+
-                        XFHjtgk5FyZC1O/NrQVnAAAAqUDIBcgjRYYC2iFCbpHMfXtu9eWRSl7sAAUAAOsYQi5AHqkpNtP2
-                        arvsMcF4gs6MBCiWRCcTAACsXwi5AHlkT0MJOUzyQ1V4vFjnbxdUAQAArFcIuQB5wmIspHs3K6+W
-                        5wH80RycmQoAAJAKhFyAPNFcZqVahfFevL3r0X4fAQAArHcIuQB5gKcq8Fxcp1l+tmjHaFDaNhcA
-                        AGC9Q8gFyAMV9iLaXu2gApktv3gHtYtTQWkoPwAAwHqHkAuQB3iXqG0KUxXG/TF6fySw6u2CAQAA
-                        cglCLkAe2F3nJKelSPaYURFyz41jqgIAAOgDQi6AzhkLC2hPfbHicWdFwA3PJQkAAEAPEHIBdG5H
-                        tYM2lFtljwnHk5iqAAAAuoKQC6BztzQ4qdgkP1Xh3ESAhmcxVQEAAPQDIRdAx6ocJtpTXyI7VYFn
-                        477d56MINoAAAAAdQcgF0DGX3USNpRbZY2YiCbo4FaJ5TFUAAAAdQcgF0LEDreVUbDbKHjPki1KX
-                        J0wAAAB6gpALoFM2k4H2N5cpHnd80EfxBKq4AACgL0YCAF3iHttHnrsgbekrxx9LEAAAgN4g5ALo
-                        1MLCAk0E4wQAAJCPfg24Q2uxZ0gasAAAAABJRU5ErkJggg==" alt="img" />
-                        <p>Поздравляем, вы только что зарегестрировались на сайте <a href="https://cyberdas.net">CyberDAS</a>. Для подтверждения регистрации активируйте аккаунт, нажав на кнопку ниже.</p>
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
+                      <td style="font-family: sans-serif; font-size: 16px; vertical-align: top;">
+                        <a href="https://cyberdas.net" target="border"><img style="max-width: 516px; margin-bottom: 20px;" src="https://i.imgur.com/sqLsGe6.png" alt="логотип кибердаса" /></a>
+                        <p>Поздравляем с регистрацией на сайте. Для подтверждения регистрации активируйте аккаунт, нажав на кнопку ниже.</p>
+                        <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;">
                           <tbody>
                             <tr>
-                              <td align="left">
-                                <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                              <td align="left" style="font-family: sans-serif; font-size: 14px; vertical-align: top; padding-bottom: 15px;">
+                                <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
                                   <tbody>
                                     <tr>
-                                      <td> <a href="{{ verify_url }}" target="_blank">Подтвердить регистрацию</a> </td>
+                                      <td style="font-family: sans-serif; font-size: 16px; vertical-align: top; background-color: #3498db; border-radius: 0; text-align: center;"> <a href="{{ verify_url }}" target="_blank" style="display: inline-block; color: #ffffff; background-color: #3498db; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-transform: capitalize; border-color: #3498db;">Подтвердить регистрацию</a> </td>
                                     </tr>
                                   </tbody>
                                 </table>
@@ -461,7 +129,7 @@
                             </tr>
                           </tbody>
                         </table>
-                        <p>Если вы не проходили регистрацию, тогда просто удалите письмо.</p>
+                        <p style="font-family: sans-serif; font-size: 16px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Если вы не проходили регистрацию - просто удалите письмо.</p>
                       </td>
                     </tr>
                   </table>
@@ -470,10 +138,23 @@
 
             <!-- END MAIN CONTENT AREA -->
             </table>
-            <!-- END CENTERED WHITE CONTAINER -->
+
+            <!-- START FOOTER -->
+            <div class="footer" style="clear: both; Margin-top: 10px; text-align: center; width: 100%;">
+              <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
+                <tr>
+                  <td class="content-block" style="font-family: sans-serif; vertical-align: top; font-size: 12px; color: #999999; text-align: center;">
+                    <span class="apple-link" style="color: #999999; font-size: 12px; text-align: center;"></span>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <!-- END FOOTER -->
+
+          <!-- END CENTERED WHITE CONTAINER -->
           </div>
         </td>
-        <td>&nbsp;</td>
+        <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;">&nbsp;</td>
       </tr>
     </table>
   </body>
