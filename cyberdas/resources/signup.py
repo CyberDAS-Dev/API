@@ -58,10 +58,9 @@ class Signup(object):
         if self._testing:
             resp.status = falcon.HTTP_200
             return
-        # NOTE: netloc нормально работает в тестовом окружении, 
-        # но может сломаться в проде. аккуратно!
-        verify_url = '{netloc}/verify?token={token}'.format(netloc = req.netloc, 
-                                                         token = mail_token)
+
+        verify_url = '{orig_url}/verify?token={token}'\
+                    .format(orig_url = req.forwarded_prefix, token = mail_token)
         template = self.load_template('verify_email')
         rendered_template = template.render(verify_url = verify_url)
         self.mail.send(
