@@ -2,8 +2,7 @@ name: deploy-prod
 
 on:
   push:
-    branches:
-      - main
+    branches: [ $default-branch ]
 
 jobs:
   build:
@@ -12,14 +11,12 @@ jobs:
       run:
         working-directory: /usr/share/cyberdas
     steps:
-      - name: Cleanup
-        run: |
-          rm -rf cyberdas-prod
-      - name: Clone repo
-        run: |
-          git clone https://github.com/$GITHUB_REPOSITORY.git --branch ${GITHUB_REF##*/} --single-branch cyberdas-prod
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: prod
       - name: Set secrets
-        working-directory: /usr/share/cyberdas/cyberdas-prod
+        working-directory: prod
         run: |
           python3 -c "
           with open('cfg.ini', 'r+') as f:
@@ -48,14 +45,14 @@ jobs:
               f.truncate()
               f.close()"
       - name: Install app
-        working-directory: /usr/share/cyberdas/cyberdas-prod
+        working-directory: prod 
         run: |
           python3 -m venv .venv
           source .venv/bin/activate
           pip install --upgrade pip setuptools wheel
           pip install -e "."
       - name: Apply DB migrations
-        working-directory: /usr/share/cyberdas/cyberdas-prod
+        working-directory: prod
         run: |
             source .venv/bin/activate
             alembic -c cfg.ini upgrade head
@@ -65,7 +62,7 @@ jobs:
     runs-on: [self-hosted, linux, X64]
     steps:
       - name: Move new API specification
-        working-directory: /usr/share/cyberdas/cyberdas-prod
+        working-directory: prod
         run: |
           mv openapi-spec.yml cyberdas/static/openapi-spec.yml
       - name: Restart service

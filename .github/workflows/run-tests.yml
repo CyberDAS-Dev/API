@@ -1,37 +1,28 @@
 name: run-tests
 
 on:
-  pull_request: 
   push:
-    branches-ignore: 
-      - main
-      - next
-    # Все пуши, попадающие в эти ветки, должны быть уже протестированы
+    branches: [ $default-branch ]
+  pull_request:
+    branches: [ $default-branch ]
 
 jobs:
 
   build:
     runs-on: [self-hosted, linux, X64]
-    defaults:
-      run:
-        working-directory: /usr/share/cyberdas
     steps:
       - name: Cleanup
         run: |
-          if [ -d "cyberdas-test" ]
-          then
-            rm -rf cyberdas-test
-
-            PGPASSWORD=${{ secrets.DB_PASS_TEST }} psql \
-            -U ${{ secrets.DB_USER_TEST }} \
-            -d ${{ secrets.DB_NAME_TEST }} \
-            -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
-          fi
-      - name: Clone repo
-        run: 
-          git clone https://github.com/$GITHUB_REPOSITORY.git --branch ${GITHUB_REF##*/} --single-branch cyberdas-test
+          PGPASSWORD=${{ secrets.DB_PASS_TEST }} psql \
+          -U ${{ secrets.DB_USER_TEST }} \
+          -d ${{ secrets.DB_NAME_TEST }} \
+          -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: test
       - name: Setup config
-        working-directory: /usr/share/cyberdas/cyberdas-test
+        working-directory: test
         run: |
           python3 -c "
           with open('cfg.ini', 'r+') as f:
@@ -60,7 +51,7 @@ jobs:
               f.truncate()
               f.close()"
       - name: Install app
-        working-directory: /usr/share/cyberdas/cyberdas-test
+        working-directory: test
         run: |
           python3 -m venv .venv
           source .venv/bin/activate
@@ -72,28 +63,26 @@ jobs:
     runs-on: [self-hosted, linux, X64]
     steps:
       - name: Initialize DB
-        working-directory: /usr/share/cyberdas/cyberdas-test
+        working-directory: test
         run: |
           source .venv/bin/activate
           alembic -c cfg.ini upgrade head
           initialize_db
       - name: Run tests
         id: testStep
-        working-directory: /usr/share/cyberdas/cyberdas-test
+        working-directory: test
         run: |
           source .venv/bin/activate
           pytest -W error
       - name: Debug test failure
-        working-directory: /usr/share/cyberdas/cyberdas-test
+        working-directory: test
         if: ${{ always() && steps.testStep.outcome == 'failure' }}
         run: |
           source .venv/bin/activate
           pytest -qs --no-summary
       - name: Wipe files and DB
-        working-directory: /usr/share/cyberdas
-        if: ${{ always() }}
         run: |
-          rm -rf cyberdas-test
+          rm -rf test
 
           PGPASSWORD=${{ secrets.DB_PASS_TEST }} psql \
           -U ${{ secrets.DB_USER_TEST }} \
