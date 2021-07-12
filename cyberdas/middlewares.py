@@ -1,9 +1,21 @@
 import falcon_sqla
 from sqlalchemy import create_engine
 
+from .middleware import logging
+
+
+def create_logging_middleware(cfg):
+    '''
+    Инициализирует логгирующий middleware, ответственный за запись всех
+    входящих запросов и внутренних сообщений от компонентов.
+    Доступ к внутреннему логгеру осуществляется через req.context.logger.
+    '''
+    return logging.LoggerMiddleware(cfg)
+
+
 def create_db_middleware(cfg):
     '''
-    Возвращает БД-middleware, ответственное за управление сессиями базы данных.
+    Инициализирует БД-middleware, ответственный за управление сессиями базы данных.
     Сессия будет доступна в каждом запросе через req.context.session.
     '''
     engine = create_engine(cfg['alembic']['sqlalchemy.url'])
@@ -20,3 +32,4 @@ def middleware(api):
     работать без middleware базы данных, поэтому компонент для БД должен идти первее 
     '''
     api.add_middleware(create_db_middleware(api.cfg))
+    api.add_middleware(create_logging_middleware(api.cfg))

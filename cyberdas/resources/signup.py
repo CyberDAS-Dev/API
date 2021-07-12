@@ -26,6 +26,7 @@ class Signup(object):
         Требует JSON во входящем потоке.
         '''
         dbses = req.context.session
+        log = req.context.logger
 
         data = req.get_media()
         
@@ -52,6 +53,7 @@ class Signup(object):
             faculty_id = faculty.id, email_verified = False, verified = False
         )
         dbses.add(newUser)
+        log.debug('[НОВЫЙ ПОЛЬЗОВАТЕЛЬ] email %s' % data['email'])
 
         ### Отправка письма для верификации адреса
         mail_token = self.mail.generate_token(data['email'])
@@ -68,6 +70,7 @@ class Signup(object):
             subject = 'Подтверждение e-mail адреса в CyberDAS', 
             content = rendered_template
         )
+        log.debug('[ОТПРАВЛЕН EMAIL] email %s, link %s' % (data['email'], verify_url))
         resp.status = falcon.HTTP_200
 
     def load_template(self, name):
