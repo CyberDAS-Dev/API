@@ -9,17 +9,6 @@ jobs:
   build:
     runs-on: [self-hosted, linux, X64]
     steps:
-      - name: Cleanup
-        run: |
-          if [ -d "test" ]
-          then
-            rm -rf test
-            
-            PGPASSWORD=${{ secrets.DB_PASS_TEST }} psql \
-            -U ${{ secrets.DB_USER_TEST }} \
-            -d ${{ secrets.DB_NAME_TEST }} \
-            -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
-          fi
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -83,11 +72,6 @@ jobs:
         run: |
           source .venv/bin/activate
           pytest -qs --no-summary
-      - name: Wipe files and DB
+      - name: Wipe files
         run: |
           rm -rf test
-
-          PGPASSWORD=${{ secrets.DB_PASS_TEST }} psql \
-          -U ${{ secrets.DB_USER_TEST }} \
-          -d ${{ secrets.DB_NAME_TEST }} \
-          -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
