@@ -60,6 +60,9 @@ jobs:
           source .venv/bin/activate
           alembic -c cfg.ini upgrade head
           initialize_db
+      - name: Run linter
+        working-directory: test
+        run: flake8
       - name: Run tests
         id: testStep
         working-directory: test
@@ -73,5 +76,4 @@ jobs:
           source .venv/bin/activate
           pytest -qs --no-summary
       - name: Wipe files
-        run: |
-          rm -rf test
+        run: rm -rf test

@@ -22,7 +22,8 @@ requires = [
 tests_require = [
     'pytest>= 3.7.4, <=6.1.2',
     'pytest-cov',
-    'schemathesis'
+    'schemathesis',
+    'flake8'
 ]
 
 setup(
@@ -47,8 +48,8 @@ setup(
     },
     install_requires=requires,
     entry_points={
-       'console_scripts': [
-           'initialize_db = cyberdas.scripts.initialize_db:main'
-       ],
+        'console_scripts': [
+            'initialize_db = cyberdas.scripts.initialize_db:main'
+        ],
     },
 )
