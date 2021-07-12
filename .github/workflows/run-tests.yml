@@ -13,10 +13,15 @@ jobs:
     steps:
       - name: Cleanup
         run: |
-          PGPASSWORD=${{ secrets.DB_PASS_TEST }} psql \
-          -U ${{ secrets.DB_USER_TEST }} \
-          -d ${{ secrets.DB_NAME_TEST }} \
-          -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+          if [ -d "test" ]
+          then
+            rm -rf test
+            
+            PGPASSWORD=${{ secrets.DB_PASS_TEST }} psql \
+            -U ${{ secrets.DB_USER_TEST }} \
+            -d ${{ secrets.DB_NAME_TEST }} \
+            -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+          fi
       - name: Checkout
         uses: actions/checkout@v2
         with:
