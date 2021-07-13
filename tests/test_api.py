@@ -7,6 +7,3 @@ schema = schemathesis.from_path("openapi-spec.yml",
 # @schema.parametrize()
 # def test_api(case):
 #    case.call_and_validate()
-
-def test_dummy():
-    assert 1 == 1
