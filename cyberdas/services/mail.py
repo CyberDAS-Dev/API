@@ -4,7 +4,7 @@ import ssl
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from itsdangerous import URLSafeTimedSerializer
+from itsdangerous import URLSafeTimedSerializer, BadData
 
 
 class Mail(object):
@@ -21,23 +21,24 @@ class Mail(object):
         self.account_login = cfg['mail']['login']
         self.account_password = cfg['mail']['password']
         self.sent_from = cfg['mail']['name']
-    
+
     def send(self, to, subject, content):
         '''
         Отправляет письмо на указанный адрес.
+
         Аргументы:
             to(str, необходимо): эмэйл-адрес получателя
 
             subject(str, необходимо): тема письма
 
-            content(list, необходимо): список из содержимого письма. Может включать
-                текст, HTML или изображения.
+            content(list, необходимо): список из содержимого письма. Может
+                включать в себя текст, HTML или изображения.
         '''
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
         msg['From'] = self.sent_from
         msg['To'] = to
-        data = MIMEText(content, 'html') # we send HTML only
+        data = MIMEText(content, 'html')  # мы отправляем только HTML
         msg.attach(data)
         try:
             context = ssl.SSLContext(ssl.PROTOCOL_TLS)
@@ -53,7 +54,8 @@ class Mail(object):
 
     def validate_address(self, email):
         '''
-        Проверяет, является ли аргумент email эмэйлом, используя примитивное регулярное выражение
+        Проверяет, является ли аргумент email эмэйлом, используя примитивное
+        регулярное выражение.
         '''
         if re.match(r"^\S+@\S+$", email) is None:
             return False
@@ -62,18 +64,21 @@ class Mail(object):
     def generate_token(self, data):
         '''
         Возвращает цифровую сигнатуру письма, содержащую адрес получателя
+
         Аргументы:
             data(str, необходимо): строка, которую необходимо подписать
         '''
         serializer = URLSafeTimedSerializer(self.mail_key)
-        return serializer.dumps(data, salt = self.mail_salt) 
-    
+        return serializer.dumps(data, salt = self.mail_salt)
+
     def confirm_token(self, token):
         '''
-        Проверяет цифровую сигнатуру письма. 
-        Возвращает подписанные данные, если она валидна, и False, если невалидна. 
+        Проверяет цифровую сигнатуру письма.
+        Возвращает подписанные данные или False, если подпись невалидна.
+
         Аргументы:
-            token(str, необходимо): строка, содержащая сигнатуру, которую необходимо проверить
+            token(str, необходимо): строка, содержащая сигнатуру, которую
+                необходимо проверить
         '''
         serializer = URLSafeTimedSerializer(self.mail_key)
         try:
@@ -82,6 +87,6 @@ class Mail(object):
                 salt = self.mail_salt,
                 max_age = self.mail_expiry
             )
-        except:
+        except BadData:
             return False
         return data

@@ -7,6 +7,7 @@ from sqlalchemy.orm import relationship
 
 from .__meta__ import Base
 
+
 class Faculty(Base):
     '''
         Объект БД, хранящий информацию о факультете.
@@ -21,7 +22,8 @@ class Faculty(Base):
 
         Взаимоотношения:
             population - один-ко-многим
-                Задает соответствие между факультетом и пользователями, которые на нем учатся
+                Задает соответствие между факультетом и пользователями,
+                которые на нем учатся
     '''
 
     __tablename__ = 'faculties'
