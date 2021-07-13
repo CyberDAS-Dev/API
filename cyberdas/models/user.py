@@ -63,6 +63,10 @@ class User(Base):
             faculty - многие-к-одному
                 Задает соответствие между пользователем и факультетом его
                 обучения
+
+            session - один-ко-многим
+                Задает соответствие между пользователем и всеми его активными
+                сессиями
     '''
 
     __tablename__ = 'users'
@@ -82,3 +86,4 @@ class User(Base):
                        server_default = func.now())
 
     faculty = relationship('Faculty', back_populates = 'population')
+    session = relationship('Session', back_populates = 'user')
