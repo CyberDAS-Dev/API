@@ -1,4 +1,3 @@
-import os 
 import json
 
 import falcon_sqla
@@ -7,9 +6,10 @@ from sqlalchemy import create_engine
 from .. import models
 from .. import config
 
+
 def setup_faculties(dbsession):
     '''
-    Загрузка списка факультетов в БД
+    Загрузка списка факультетов в БД.
     '''
     with open("cyberdas/static/faculties.json") as f:
         data = json.load(f)
@@ -20,6 +20,7 @@ def setup_faculties(dbsession):
             name = entry['name']
         )
         dbsession.add(newFaculty)
+
 
 def main():
     cfg = config.get_cfg()

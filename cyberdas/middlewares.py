@@ -15,7 +15,7 @@ def create_logging_middleware(cfg):
 
 def create_db_middleware(cfg):
     '''
-    Инициализирует БД-middleware, ответственный за управление сессиями базы данных.
+    Инициализирует БД-middleware, ответственный за управление сессиями к БД.
     Сессия будет доступна в каждом запросе через req.context.session.
     '''
     engine = create_engine(cfg['alembic']['sqlalchemy.url'])
@@ -26,10 +26,11 @@ def middleware(api):
     '''
     Функция, инициализирующая все middleware проекта.
     Каждая строка должна быть вида 'api.add_middleware(*middleware*)'
-    
-    Внимание: порядок важен! Эти компоненты не независимы, первый в списке будет
-    первым при обработке запросов. Например, аутентификационный middleware не сможет
-    работать без middleware базы данных, поэтому компонент для БД должен идти первее 
+
+    Внимание: порядок важен! Middleware-компоненты не независимы, при этом
+    первый компонент в этой функции будет первым при обработке запросов.
+    Например, аутентификационный middleware не сможет работать без middleware
+    базы данных, поэтому компонент для БД должен идти первым.
     '''
     api.add_middleware(create_db_middleware(api.cfg))
     api.add_middleware(create_logging_middleware(api.cfg))

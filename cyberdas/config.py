@@ -2,6 +2,7 @@ import configparser
 
 CONFIG_NAME = 'cfg.ini'
 
+
 def get_cfg():
     '''
     Возвращает конфигурацию проекта
