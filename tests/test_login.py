@@ -4,9 +4,11 @@ from datetime import datetime
 
 from conftest import MockDB, generate_users, authorize
 from cyberdas.models import Faculty, Session
+from cyberdas.config import get_cfg
 
 USER_EMAIL = 'user@das.net'
 USER_PASS = 'test'
+SES_LENGTH = int(get_cfg()['internal']['session.length'])
 
 
 @pytest.fixture(scope='class')
@@ -55,12 +57,15 @@ class TestLogin:
         yield resp
 
     def test_post(self, valid_post):
+        'Эндпоинт логина должен возвращать 200 OK в случае успеха'
         assert valid_post.status == falcon.HTTP_200
 
     def test_cookie(self, valid_post):
+        'В ответе на запрос должен присутствовать SESSIONID-cookie'
         assert 'SESSIONID' in valid_post.cookies
 
     def test_csrf_token(self, valid_post):
+        'В ответе на запрос должен присутствовать antiCSRF-cookie токен'
         assert 'antiCSRF' in valid_post.cookies
 
     @pytest.fixture(scope = 'class')
@@ -68,19 +73,23 @@ class TestLogin:
         yield valid_post.cookies['SESSIONID']
 
     def test_cookie_attributes(self, session_cookie):
+        'Куки должен иметь параметры Secure, HttpOnly и SameSite (не покрыто)'
         assert session_cookie.secure is True
         assert session_cookie.http_only is True
 
     def test_cookie_age(self, session_cookie):
-        assert session_cookie.max_age == 15 * 60
+        'Время жизни куки должно быть таким же, как и в конфигурации проекта'
+        assert session_cookie.max_age == SES_LENGTH
 
     def test_session_created(self, session_cookie, oneUserDB):
+        'При успешном логине должна создаваться сессия в БД'
         with oneUserDB.session as dbses:
             session = dbses.query(Session).filter_by(uid = 1).first()
             assert session is not None
             assert session.sid == session_cookie['SESSIONID']
 
     def test_two_sessions(self, client, oneUserDB):
+        'Если пользователь уже залогинен, то /login создает вторую сессию'
         resp = client.simulate_post(self.URI, json = {'email': USER_EMAIL,
                                                       'password': USER_PASS})
         assert resp.status == falcon.HTTP_200
@@ -112,3 +121,9 @@ class TestLogout:
         resp = client.simulate_get(self.URI)
         assert resp.status == falcon.HTTP_200
         assert resp.cookies['SESSIONID'].expires <= datetime.now()
+
+    def test_clean_db(self, oneUserDB):
+        'При логауте сессия должна удаляться из БД'
+        with oneUserDB.session as dbses:
+            session = dbses.query(Session).filter_by(uid = 1).first()
+            assert session is None
