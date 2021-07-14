@@ -27,12 +27,15 @@ def main():
     engine = create_engine(cfg['alembic']['sqlalchemy.url'])
     manager = falcon_sqla.Manager(engine)
 
-    models.Base.metadata.drop_all(engine)
-    models.Base.metadata.create_all(engine)
-
     print("[ Инициализация БД ]")
+    print("Удаление существующей модели данных...", end=' ')
+    models.Base.metadata.drop_all(engine)
+    print("Готово")
+    print("Установка новой модели данных...", end=' ')
+    models.Base.metadata.create_all(engine)
+    print("Готово")
 
     with manager.session_scope() as session:
-        print("Загрузка списка факультетов... ", end='')
+        print("Загрузка списка факультетов...", end=' ')
         setup_faculties(session)
         print("Готово")
