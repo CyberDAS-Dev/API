@@ -1,6 +1,5 @@
 import pytest
 import falcon
-from datetime import datetime
 
 from conftest import MockDB, generate_users, authorize
 from cyberdas.models import Faculty, Session
@@ -40,7 +39,7 @@ class TestLogin:
 
     def test_bad_email(self, client, oneUserDB):
         'При вводе неверного эмэйла возвращается 401 Unauthorized'
-        resp = client.simulate_post(self.URI, json = {'email': 'trash',
+        resp = client.simulate_post(self.URI, json = {'email': 'trash@mail.ru',
                                                       'password': USER_PASS})
         assert resp.status == falcon.HTTP_401
 
@@ -61,12 +60,12 @@ class TestLogin:
         assert valid_post.status == falcon.HTTP_200
 
     def test_cookie(self, valid_post):
-        'В ответе на запрос должен присутствовать SESSIONID-cookie'
+        'В ответе на запрос должен присутствовать Set-Cookie с SESSIONID'
         assert 'SESSIONID' in valid_post.cookies
 
     def test_csrf_token(self, valid_post):
-        'В ответе на запрос должен присутствовать antiCSRF-cookie токен'
-        assert 'antiCSRF' in valid_post.cookies
+        'В ответе на запрос должен присутствовать заголовок XCSRF-Token'
+        assert 'XCSRF-token' in valid_post.headers
 
     @pytest.fixture(scope = 'class')
     def session_cookie(self, valid_post):
@@ -86,7 +85,7 @@ class TestLogin:
         with oneUserDB.session as dbses:
             session = dbses.query(Session).filter_by(uid = 1).first()
             assert session is not None
-            assert session.sid == session_cookie['SESSIONID']
+            assert session.sid == session_cookie.value
 
     def test_two_sessions(self, client, oneUserDB):
         'Если пользователь уже залогинен, то /login создает вторую сессию'
@@ -109,7 +108,7 @@ class TestLogout:
 
     def test_unauthorized(self, client):
         'При попытке выйти не залогинившись, возвращается 401 Unauthorized'
-        resp = client.simulate_post(self.URI)
+        resp = client.simulate_get(self.URI)
         assert resp.status == falcon.HTTP_401
 
     def test_get(self, client, oneUserDB):
@@ -117,10 +116,10 @@ class TestLogout:
         При отправке GET-запроса пользователь получает обратно свой cookie, но
         просрочившийся в прошлом
         '''
-        authorize(oneUserDB, 1)
-        resp = client.simulate_get(self.URI)
+        ses_cookie = authorize(oneUserDB, 1)
+        resp = client.simulate_get(self.URI, cookies = ses_cookie)
         assert resp.status == falcon.HTTP_200
-        assert resp.cookies['SESSIONID'].expires <= datetime.now()
+        assert resp.cookies['SESSIONID'].max_age == -1
 
     def test_clean_db(self, oneUserDB):
         'При логауте сессия должна удаляться из БД'

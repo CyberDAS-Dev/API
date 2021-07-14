@@ -11,15 +11,20 @@ from cyberdas.app import Service
 from cyberdas.models import Base, User, Session
 from cyberdas.config import get_cfg
 
+
 @pytest.fixture(scope = 'class')
 def client():
     yield testing.TestClient(Service())
 
 
 def authorize(DB, uid):
-    session = Session(uid = uid, sid = random.randrange(10**5, 10**6),
-                      expires = datetime(datetime.now().year + 1))
+    sid = random.randrange(10**5, 10**6)
+    session = Session(uid = uid, sid = sid,
+                      csrf_token = random.randrange(10**5, 10**6),
+                      user_agent = 'curl', ip = '127.0.0.1',
+                      expires = datetime(datetime.now().year + 1, 12, 31))
     DB.setup_models(session)
+    return {"SESSIONID": sid}
 
 
 def logout(DB, uid):
@@ -42,6 +47,8 @@ class MockDB(object):
             Base.metadata.create_all(engine)
 
     def setup_models(self, models):
+        if type(models) != list:
+            models = [models]
         with self.manager.session_scope() as session:
             for model in models:
                 session.add(model)
@@ -71,8 +78,8 @@ def generate_users(n, emails = [], passwords = []):
     for x in range(1, n + 1):
         user = User(
             id = x,
-            email = emails[x] if len(emails) > x else random_string(),
-            password = passwords[x] if len(passwords) > x else random_string(),
+            email = emails[x - 1] if len(emails) >= x else random_email(),
+            password = passwords[x - 1] if len(passwords) >= x else random_string(), # noqa
             name = random_string(), surname = random_string(),
             email_verified = False, verified = False
         )
