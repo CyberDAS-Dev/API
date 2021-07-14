@@ -75,8 +75,8 @@ paths:
               schema:
                 type: string
                 example: WfF1szMUHhiokx9AHFply5L2xAOfjRkE
-        '403':
-          description: Такой пользователь отсутствует. Проверьте правильность данных
+        '401':
+          description: Неверно введен адрес почты или пароль
           content:
             application/json:
               schema:

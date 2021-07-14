@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -11,9 +10,6 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
 from .__meta__ import Base
-from ..config import get_cfg
-
-session_length = int(get_cfg()['internal']['session.length'])
 
 
 class Session(Base):
@@ -27,6 +23,10 @@ class Session(Base):
             uid - Foreign key Integer
                 Уникальный идентификатор пользователя, с которым связана сессия
 
+            csrf_token - Unique String
+                Уникальная строка, присвоенная пользователю для защиты от
+                CSRF атак
+
             user_agent - Text
                 Хранит информацию о User Agent пользователя
 
@@ -35,7 +35,6 @@ class Session(Base):
 
             expires - DateTime
                 Хранит время истечения сессии
-                Sets on the DB server for first time to SQL now().
 
             created_at - DateTime
                 Хранит дату последней выдачи куки
@@ -50,12 +49,10 @@ class Session(Base):
     __tablename__ = 'sessions'
     sid = Column(String, primary_key = True)
     uid = Column(Integer, ForeignKey('users.id'), nullable = False)
+    csrf_token = Column(String, unique = True, nullable = False)
     user_agent = Column(Text, nullable = False)
     ip = Column(String, nullable = False)
-    expires = Column(
-        DateTime(timezone = True), nullable = False,
-        default = datetime.now() + timedelta(seconds = session_length)
-    )
+    expires = Column(DateTime(timezone = True), nullable = False)
     created_at = Column(
         DateTime(timezone = True), nullable = False,
         server_default = func.now()
