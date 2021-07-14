@@ -1,17 +1,16 @@
-import falcon
 import json
-import jinja2
-import os
+from os import path
 
+import jinja2
+import falcon
 from falcon.media.validators import jsonschema
 
-from cyberdas.models import User
-from cyberdas.models import Faculty
+from cyberdas.models import User, Faculty
 
 
 class Signup(object):
 
-    with open(os.path.abspath('cyberdas/static/signup_schema.json'), 'r') as f:
+    with open(path.abspath('cyberdas/static/signup_schema.json'), 'r') as f:
         signup_schema = json.load(f)
 
     def __init__(self, mail_service, testing = False):
@@ -32,21 +31,14 @@ class Signup(object):
 
         data = req.get_media()
 
-        # Регистрация
-        try:
-            user = dbses.query(User).filter_by(email = data['email']).first()
-        except Exception:
-            raise falcon.HTTPBadRequest
+        user = dbses.query(User).filter_by(email = data['email']).first()
         if user is not None:
             raise falcon.HTTPForbidden(
                 title = '403 Forbidden',
-                description = 'Такой адрес почты уже занят.')
-
-        try:
-            faculty = dbses.query(Faculty).filter_by(name = data['faculty']) \
-                .first()
-            assert faculty is not None
-        except AssertionError:
+                description = 'Такой адрес почты уже занят.'
+            )
+        faculty = dbses.query(Faculty).filter_by(name = data['faculty']).first()
+        if faculty is None:
             raise falcon.HTTPBadRequest
 
         newUser = User(
@@ -59,12 +51,7 @@ class Signup(object):
         dbses.add(newUser)
         log.debug('[НОВЫЙ ПОЛЬЗОВАТЕЛЬ] email %s' % data['email'])
 
-        # Отправка письма для верификации адреса
         mail_token = self.mail.generate_token(data['email'])
-        if self._testing:
-            resp.status = falcon.HTTP_200
-            return
-
         verify_url = f'{req.forwarded_prefix}/verify?token={mail_token}'
         template = self.load_template('verify_email')
         rendered_template = template.render(verify_url = verify_url)
@@ -82,6 +69,6 @@ class Signup(object):
         '''
         Возвращает загруженный шаблон jinja2.
         '''
-        path = os.path.join('cyberdas/templates', name + '.jinja2')
-        with open(os.path.abspath(path), 'r') as fp:
+        template_path = path.join('cyberdas/templates', name + '.jinja2')
+        with open(path.abspath(template_path), 'r') as fp:
             return jinja2.Template(fp.read())
