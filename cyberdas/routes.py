@@ -3,6 +3,8 @@ from .config import get_cfg
 
 from .resources import (
     Signup,
+    Login,
+    Logout,
 )
 from .services import (
     Mail,
@@ -28,4 +30,6 @@ def route(api):
     Каждая строка должна быть вида `api.add_route([uri], [resource])`.
     '''
     api.add_route('/signup', Signup(mail, testing))
+    api.add_route('/login', Login(cfg))
+    api.add_route('/logout', Logout())
     api.add_static_route('/', path.abspath('cyberdas/static/'))
