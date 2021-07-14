@@ -77,7 +77,6 @@ def generate_users(n, emails = [], passwords = []):
     lst = []
     for x in range(1, n + 1):
         user = User(
-            id = x,
             email = emails[x - 1] if len(emails) >= x else random_email(),
             password = passwords[x - 1] if len(passwords) >= x else random_string(), # noqa
             name = random_string(), surname = random_string(),

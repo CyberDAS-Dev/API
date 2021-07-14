@@ -23,7 +23,8 @@ tests_require = [
     'pytest>= 3.7.4, <=6.1.2',
     'pytest-cov',
     'schemathesis',
-    'flake8'
+    'flake8',
+    'smtpdfix'
 ]
 
 setup(

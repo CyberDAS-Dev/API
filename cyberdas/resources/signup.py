@@ -59,7 +59,8 @@ class Signup(object):
         self.mail.send(
             to = data['email'],
             subject = 'Подтверждение e-mail адреса в CyberDAS',
-            content = rendered_template
+            content = rendered_template,
+            log = log
         )
         log.debug('[ОТПРАВЛЕН EMAIL] email %s, link %s' % (data['email'],
                                                            verify_url))

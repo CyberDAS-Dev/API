@@ -22,7 +22,7 @@ class Mail(object):
         self.account_password = cfg['mail']['password']
         self.sent_from = cfg['mail']['name']
 
-    def send(self, to, subject, content):
+    def send(self, to, subject, content, log):
         '''
         Отправляет письмо на указанный адрес.
 
@@ -33,6 +33,8 @@ class Mail(object):
 
             content(list, необходимо): список из содержимого письма. Может
                 включать в себя текст, HTML или изображения.
+
+            log(необходимо): логгер, позволяющий выводить сообщения об ошибках.
         '''
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
@@ -50,7 +52,7 @@ class Mail(object):
             server.sendmail(self.sent_from, to, msg.as_string())
             server.close()
         except Exception as e:
-            print(e)
+            log.error(e)
 
     def validate_address(self, email):
         '''
