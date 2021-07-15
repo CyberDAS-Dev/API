@@ -1,3 +1,3 @@
-from .mail import Mail
+from .mail import Mail, SignupMail
 
-__all__ = ['Mail']
+__all__ = ['Mail', 'SignupMail']

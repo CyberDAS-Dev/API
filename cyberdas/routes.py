@@ -8,11 +8,11 @@ from .resources import (
     Refresh,
 )
 from .services import (
-    Mail,
+    SignupMail,
 )
 
 cfg = get_cfg()
-mail = Mail(cfg)
+mail = SignupMail(cfg)
 
 
 def route(api):
