@@ -31,7 +31,8 @@ def authorize(DB, uid):
 def logout(DB, uid):
     with DB.session as dbses:
         auth_ses = dbses.query(Session).filter_by(uid = uid).all()
-        auth_ses.delete()
+        for ses in auth_ses:
+            dbses.delete(ses)
 
 
 class MockDB(object):
