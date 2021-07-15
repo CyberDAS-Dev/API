@@ -19,12 +19,13 @@ def client():
 
 def authorize(DB, uid):
     sid = random.randrange(10**5, 10**6)
+    csrf_token = random.randrange(10**5, 10**6)
     session = Session(uid = uid, sid = sid,
-                      csrf_token = random.randrange(10**5, 10**6),
+                      csrf_token = csrf_token,
                       user_agent = 'curl', ip = '127.0.0.1',
                       expires = datetime(datetime.now().year + 1, 12, 31))
     DB.setup_models(session)
-    return {"SESSIONID": sid}
+    return {"SESSIONID": sid, "XCSRF-Token": str(csrf_token)}
 
 
 def logout(DB, uid):
