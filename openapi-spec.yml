@@ -48,7 +48,7 @@ paths:
   /login:
 
     post:
-      summary: Подтверждает идентичность пользователя, начинает сессию и возвращает аутентификационный куки
+      summary: Начинает сессию и возвращает аутентификационный куки
       tags:
         - Аутентификация
       security: []   # доступно без аутентификации
@@ -84,6 +84,76 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
 
+  /refresh:
+
+    get:
+      summary: Продлевает сессию пользователя
+      tags:
+        - Аутентификация
+      security: []   # доступно без аутентификации
+
+      responses:
+        '200':
+          description: Сессия успешно продлена.
+          headers: 
+            Set-Cookie:
+              schema: 
+                type: string
+                example: SESSIONID=abcde12345; Path=/; HttpOnly
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /resend:
+
+    post:
+      summary: Заново отправляет верификационное письмо на почту
+      tags:
+        - Аутентификация
+      security: []   # доступно без аутентификации
+
+      requestBody:
+        required: true
+        description: JSON-объект, содержащий адрес почты.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendRequest'
+
+      responses:
+        '200':
+          description: Если такой пользователь зарегистрирован, то письмо отправлено.
+        '403':
+          description: Этот пользователь уже верифицирован.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /verify:
+
+    get:
+      summary: Подтверждает адрес почты пользователя
+      tags:
+        - Аутентификация
+      security: []   # доступно без аутентификации
+
+      responses:
+        '200':
+          description: Адрес успешно подтвержден.
+        '303':
+          description: Адрес успешно подтвержден.  
+          headers: 
+            Location:
+              schema: 
+                type: string
+                example: cyberdas.net/verify
+        '401':
+          $ref: '#/components/responses/UnathorizedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
   /logout:
 
     get:
@@ -94,26 +164,6 @@ paths:
       responses:
         '200':
           description: Сессия успешно завершена.
-        '401':
-          $ref: '#/components/responses/UnathorizedError'
-        default:
-          $ref: '#/components/responses/UnexpectedError'
-
-  /refresh:
-
-    get:
-      summary: Продлевает сессию пользователя
-      tags:
-        - Аутентификация
-
-      responses:
-        '200':
-          description: Сессия успешно продлена.
-          headers: 
-            Set-Cookie:
-              schema: 
-                type: string
-                example: SESSIONID=abcde12345; Path=/; HttpOnly
         '401':
           $ref: '#/components/responses/UnathorizedError'
         default:
@@ -138,7 +188,6 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
 
-  ################## Логика очередей ##################
   /queue:
 
     get:
@@ -367,6 +416,14 @@ components:
         - name
         - surname
         - faculty
+
+    ResendRequest:
+      type: object
+      properties:
+        email:
+          type: string
+      required:
+        - email
 
 
   responses:
