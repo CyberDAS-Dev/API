@@ -1,7 +1,6 @@
 import json
 from os import path
 
-import jinja2
 import falcon
 from falcon.media.validators import jsonschema
 
@@ -53,25 +52,7 @@ class Signup(object):
         dbses.add(newUser)
         log.debug('[НОВЫЙ ПОЛЬЗОВАТЕЛЬ] email %s' % data['email'])
 
-        mail_token = self.mail.generate_token(data['email'])
-        verify_url = f'{req.forwarded_prefix}/verify?token={mail_token}'
-        template = self.load_template('verify_email')
-        rendered_template = template.render(verify_url = verify_url)
-
-        self.mail.send(
-            to = data['email'],
-            subject = 'Подтверждение e-mail адреса в CyberDAS',
-            content = rendered_template,
-            log = log
-        )
+        verify_url = self.mail.send_verification(req, data['email'])
         log.debug('[ОТПРАВЛЕН EMAIL] email %s, link %s' % (data['email'],
                                                            verify_url))
         resp.status = falcon.HTTP_200
-
-    def load_template(self, name):
-        '''
-        Возвращает загруженный шаблон jinja2.
-        '''
-        template_path = path.join('cyberdas/templates', name + '.jinja2')
-        with open(path.abspath(template_path), 'r') as fp:
-            return jinja2.Template(fp.read())
