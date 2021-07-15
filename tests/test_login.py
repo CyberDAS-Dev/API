@@ -1,7 +1,7 @@
 import pytest
 import falcon
 
-from conftest import MockDB, generate_users, authorize
+from conftest import MockDB, generate_users, authorize, logout
 from cyberdas.models import Faculty, Session
 from cyberdas.config import get_cfg
 
@@ -145,6 +145,7 @@ class TestRefresh:
     @pytest.fixture(scope = 'class')
     def session(self, oneUserDB):
         yield authorize(oneUserDB, 1)
+        logout(oneUserDB, 1)
 
     def test_unauthorized(self, client):
         'При попытке продлить не залогинившись, возвращается 401 Unauthorized'
