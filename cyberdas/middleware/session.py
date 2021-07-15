@@ -82,6 +82,9 @@ class SessionMiddleware:
             )
 
         sid = session_cookies[0]
+        # Примитивная валидация. 43 - длина строки из 256 бит в Base64.
+        if len(sid) != 43 or sid.find('\x00') != -1:
+            raise falcon.HTTPUnauthorized
         session = dbses.query(Session).filter_by(sid = sid).first()
         if session is None:
             log.error('[ПОДДЕЛЬНАЯ СЕССИЯ] sid %s' % sid)

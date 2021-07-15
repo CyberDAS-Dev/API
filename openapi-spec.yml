@@ -2,7 +2,7 @@ openapi: '3.0.2'
 
 info:
   title: CyberDAS API
-  version: '0.2'
+  version: '0.3'
   contact:
     email: api@cyberdas.net
 
