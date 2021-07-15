@@ -10,6 +10,8 @@ from cyberdas.models import User, Faculty
 
 class Signup(object):
 
+    auth = {'disabled': 1}
+
     with open(path.abspath('cyberdas/static/signup_schema.json'), 'r') as f:
         signup_schema = json.load(f)
 
