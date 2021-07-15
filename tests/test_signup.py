@@ -1,12 +1,9 @@
-import re
 import pytest
-import base64
-from copy import copy
+from unittest.mock import MagicMock, patch
 
 import falcon
-from itsdangerous import URLSafeTimedSerializer
 
-from conftest import MockDB, Service, generate_users
+from conftest import MockDB, generate_users
 from cyberdas.models import User, Faculty
 from cyberdas.config import get_cfg
 
@@ -27,31 +24,11 @@ def oneUserDB():
     return db
 
 
-@pytest.fixture
-def mockSMTP(smtpd):
-    'Подмена SMTP сервера для отправки сообщений'
-    api = Service.get_instance()
-    mail_instance = api._router.find('/signup')[0].mail
-    old_config = (
-        copy(mail_instance.smtp_server), copy(mail_instance.smtp_port),
-        copy(mail_instance.account_login), copy(mail_instance.account_password)
-    )
-    mail_instance.smtp_server = smtpd.hostname
-    mail_instance.smtp_port = smtpd.port
-    mail_instance.account_login = smtpd.config.login_username
-    mail_instance.account_password = smtpd.config.login_password
-    smtpd.config.use_starttls = True
-    yield smtpd
-    mail_instance.smtp_server = old_config[0]
-    mail_instance.smtp_port = old_config[1]
-    mail_instance.account_login = old_config[2]
-    mail_instance.account_password = old_config[3]
-
-
 class TestSignup:
 
     cfg = get_cfg()
     URI = '/signup'
+    smtp_mock = MagicMock()
 
     def test_get(self, client):
         'Регистрация не отвечает на GET-запросы'
@@ -104,14 +81,14 @@ class TestSignup:
         )
         assert resp.status == falcon.HTTP_400
 
-    def test_post(self, client, oneUserDB, mockSMTP):
+    @patch('smtplib.SMTP', new = smtp_mock)
+    def test_post(self, client, oneUserDB):
         '''
         Эндпоинт регистрации должен возвращать 200 OK в случае успеха, а так же
         отправлять письмо с валидным токеном.
 
-        Вообще, эти тесты должны быть разделены, но скоуп у mockSMTP - функция,
-        а у остальных моих fixture - класс, поэтому приходится размещать всё
-        в одной функции.
+        Отправка письма проверяется подменой smtplib.SMTP и проверкой того, что
+        он вызывался. Сам модуль отправки тестируется в test_mail.
         '''
         resp = client.simulate_post(
             self.URI,
@@ -120,23 +97,11 @@ class TestSignup:
                 "faculty": "факультет", "name": "Иван", "surname": "Иванов"
             }
         )
-        assert resp.status == falcon.HTTP_200  # эндпоинт ответил
-        assert len(mockSMTP.messages) == 1  # письмо пришло
-
-        # валидность и наличие токена
-        payload = mockSMTP.messages[0].get_payload()[0].get_payload()
-        payload = base64.b64decode(payload.encode('utf-8')).decode('utf-8')
-        r1 = re.findall(r'/verify\?[\w\=\.\-\_]+', payload)[0]
-        r1 = r1.split('=')[1]
-
-        mail_key = self.cfg['security']['secret.signup']
-        mail_salt = self.cfg['security']['salt.signup']
-        mail_expiry = int(self.cfg['mail']['expiry'])
-        serializer = URLSafeTimedSerializer(mail_key)
-        data = serializer.loads(r1, salt = mail_salt, max_age = mail_expiry)
-        assert data
+        assert resp.status == falcon.HTTP_200
+        self.smtp_mock.assert_called_once()
 
     def test_user_added(self, oneUserDB):
+        'После регистрации пользователь должен попасть в БД'
         with oneUserDB.session as dbses:
             user = dbses.query(User).filter_by(email = USER_EMAIL).first()
             assert user is not None
