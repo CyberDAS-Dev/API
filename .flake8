@@ -1,5 +1,5 @@
 [flake8]
-ignore = E251
+ignore = E251,W503
 exclude = .venv,.git,__pycache__,alembic
 max-line-length = 80
 max-complexity = 10
