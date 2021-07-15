@@ -11,6 +11,8 @@ from cyberdas.models import User, Session
 
 class Login(object):
 
+    auth = {'disabled': 1}
+
     with open(path.abspath('cyberdas/static/login_schema.json'), 'r') as f:
         login_schema = json.load(f)
 
