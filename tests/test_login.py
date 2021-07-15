@@ -1,4 +1,6 @@
+from datetime import datetime, timedelta
 import pytest
+
 import falcon
 
 from conftest import MockDB, generate_users, authorize, logout
@@ -161,14 +163,29 @@ class TestRefresh:
         )
         assert resp.status == falcon.HTTP_405
 
-    def test_get(self, client, session):
+    def test_get(self, client, session, oneUserDB):
         '''
         При отправке GET-запроса пользователь получает обратно свой cookie,
-        срок действия которого продлен на длительность одной сессии
+        срок действия которого продлен на длительность одной сессии с текущего
+        момента времени; также, строка в БД с этой сессией тоже изменяется.
         '''
+        with oneUserDB.session as dbses:
+            ses_obj = dbses.query(Session).filter_by(uid = 1).first()
+            old_expiration = ses_obj.expires.replace(tzinfo = None)
+
+        now = datetime.now()
         resp = client.simulate_get(
             self.URI,
             cookies = {'SESSIONID': session['SESSIONID']}
         )
+
         assert resp.status == falcon.HTTP_200
         assert resp.cookies['SESSIONID'].max_age == SES_LENGTH
+
+        with oneUserDB.session as dbses:
+            ses_obj = dbses.query(Session).filter_by(uid = 1).first()
+            new_expiration = ses_obj.expires.replace(tzinfo = None)
+        assert new_expiration != old_expiration
+
+        next_session_expires = (now + timedelta(seconds = SES_LENGTH))
+        assert (new_expiration - next_session_expires).total_seconds() <= 0.01

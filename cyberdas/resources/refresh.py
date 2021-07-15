@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 import falcon
 
@@ -19,8 +19,9 @@ class Refresh(object):
         log = req.context.logger
         user = req.context.user
 
+        now = datetime.now()
         session = dbses.query(Session).filter_by(sid = user['sid'])
-        session.update({Session.expires: Session.expires + timedelta(seconds = self.ses_len)}) # noqa
+        session.update({Session.expires: now + timedelta(seconds = self.ses_len)}) # noqa
 
         resp.set_cookie(
             name = 'SESSIONID', value = user['sid'], max_age = self.ses_len,
