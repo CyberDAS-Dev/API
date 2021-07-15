@@ -33,7 +33,7 @@ class LoggerMiddleware(object):
 
         Оставляет записи в access-логах об обработанных запросах.
         '''
-        uid = req.context.user.id if ('user' in req.context) else None
+        uid = req.context.user['uid'] if (req.context.user is not None) else None # noqa
         data = {'method': req.method, 'uri': req.forwarded_uri,
                 'ip': req.access_route[-1], 'agent': req.user_agent,
                 'uid': uid, 'status': resp.status[:3]}

@@ -101,23 +101,33 @@ class TestLogout:
 
     URI = '/logout'
 
-    def test_post(self, client):
-        'Логаут не отвечает на POST-запросы'
-        resp = client.simulate_post(self.URI)
-        assert resp.status == falcon.HTTP_405
+    @pytest.fixture(scope = 'class')
+    def session(self, oneUserDB):
+        yield authorize(oneUserDB, 1)
 
     def test_unauthorized(self, client):
         'При попытке выйти не залогинившись, возвращается 401 Unauthorized'
         resp = client.simulate_get(self.URI)
         assert resp.status == falcon.HTTP_401
 
-    def test_get(self, client, oneUserDB):
+    def test_post(self, client, session):
+        'Логаут не отвечает на POST-запросы'
+        resp = client.simulate_post(
+            self.URI,
+            cookies = {'SESSIONID': session['SESSIONID']},
+            headers = {'XCSRF-Token': session['XCSRF-Token']}
+        )
+        assert resp.status == falcon.HTTP_405
+
+    def test_get(self, client, session):
         '''
         При отправке GET-запроса пользователь получает обратно свой cookie, но
         просрочившийся в прошлом
         '''
-        ses_cookie = authorize(oneUserDB, 1)
-        resp = client.simulate_get(self.URI, cookies = ses_cookie)
+        resp = client.simulate_get(
+            self.URI,
+            cookies = {'SESSIONID': session['SESSIONID']}
+        )
         assert resp.status == falcon.HTTP_200
         assert resp.cookies['SESSIONID'].max_age == -1
 
