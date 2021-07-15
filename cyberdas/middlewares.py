@@ -1,7 +1,7 @@
 import falcon_sqla
 from sqlalchemy import create_engine
 
-from .middleware import logging
+from .middleware import logging, session
 
 
 def create_logging_middleware(cfg):
@@ -22,6 +22,15 @@ def create_db_middleware(cfg):
     return falcon_sqla.Manager(engine).middleware
 
 
+def create_session_middleware(api):
+    '''
+    Инициализирует сессионный middleware, ответственный за управление
+    аутентификацией пользователей. Пользовательская сессия будет доступна в
+    каждом запросе через req.context.user.
+    '''
+    return session.SessionMiddleware(api, exempt_routes = [])
+
+
 def middleware(api):
     '''
     Функция, инициализирующая все middleware проекта.
@@ -34,3 +43,4 @@ def middleware(api):
     '''
     api.add_middleware(create_db_middleware(api.cfg))
     api.add_middleware(create_logging_middleware(api.cfg))
+    api.add_middleware(create_session_middleware(api))
