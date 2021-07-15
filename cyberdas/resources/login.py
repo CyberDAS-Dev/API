@@ -17,7 +17,7 @@ class Login(object):
         login_schema = json.load(f)
 
     def __init__(self, cfg):
-        self.session_length = int(cfg['internal']['session.length'])
+        self.ses_len = int(cfg['internal']['session.length'])
 
     @jsonschema.validate(login_schema)
     def on_post(self, req, resp):
@@ -44,13 +44,13 @@ class Login(object):
         newSession = Session(
             sid = sid, uid = user.id, csrf_token = csrf_token,
             user_agent = req.user_agent, ip = req.access_route[-1],
-            expires = datetime.now() + timedelta(seconds = self.session_length)
+            expires = datetime.now() + timedelta(seconds = self.ses_len)
         )
         dbses.add(newSession)
         log.debug('[НОВАЯ СЕССИЯ] sid %s, uid %s, csrf %s' % (sid, user.id, csrf_token)) # noqa
 
         resp.set_cookie(
-            name = 'SESSIONID', value = sid, max_age = self.session_length,
+            name = 'SESSIONID', value = sid, max_age = self.ses_len,
             secure = True, http_only = True, same_site = 'Strict'
         )
         resp.set_header(name = 'XCSRF-Token', value = csrf_token)

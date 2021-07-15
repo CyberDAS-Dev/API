@@ -99,6 +99,26 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
 
+  /refresh:
+
+    get:
+      summary: Продлевает сессию пользователя
+      tags:
+        - Аутентификация
+
+      responses:
+        '200':
+          description: Сессия успешно продлена.
+          headers: 
+            Set-Cookie:
+              schema: 
+                type: string
+                example: SESSIONID=abcde12345; Path=/; HttpOnly
+        '401':
+          $ref: '#/components/responses/UnathorizedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
   /me:
 
     get:

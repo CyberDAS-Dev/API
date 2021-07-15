@@ -136,3 +136,38 @@ class TestLogout:
         with oneUserDB.session as dbses:
             session = dbses.query(Session).filter_by(uid = 1).first()
             assert session is None
+
+
+class TestRefresh:
+
+    URI = '/refresh'
+
+    @pytest.fixture(scope = 'class')
+    def session(self, oneUserDB):
+        yield authorize(oneUserDB, 1)
+
+    def test_unauthorized(self, client):
+        'При попытке продлить не залогинившись, возвращается 401 Unauthorized'
+        resp = client.simulate_get(self.URI)
+        assert resp.status == falcon.HTTP_401
+
+    def test_post(self, client, session):
+        'Рефреш не отвечает на POST-запросы'
+        resp = client.simulate_post(
+            self.URI,
+            cookies = {'SESSIONID': session['SESSIONID']},
+            headers = {'XCSRF-Token': session['XCSRF-Token']}
+        )
+        assert resp.status == falcon.HTTP_405
+
+    def test_get(self, client, session):
+        '''
+        При отправке GET-запроса пользователь получает обратно свой cookie,
+        срок действия которого продлен на длительность одной сессии
+        '''
+        resp = client.simulate_get(
+            self.URI,
+            cookies = {'SESSIONID': session['SESSIONID']}
+        )
+        assert resp.status == falcon.HTTP_200
+        assert resp.cookies['SESSIONID'].max_age == SES_LENGTH
