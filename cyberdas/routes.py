@@ -5,6 +5,7 @@ from .resources import (
     Signup,
     Login,
     Logout,
+    Refresh,
 )
 from .services import (
     Mail,
@@ -22,4 +23,5 @@ def route(api):
     api.add_route('/signup', Signup(mail))
     api.add_route('/login', Login(cfg))
     api.add_route('/logout', Logout())
+    api.add_route('/refresh', Refresh(cfg))
     api.add_static_route('/', path.abspath('cyberdas/static/'))
