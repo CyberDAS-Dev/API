@@ -70,12 +70,17 @@ jobs:
         working-directory: test
         run: |
           source .venv/bin/activate
-          pytest -W error
+          pytest -W error --cov=cyberdas --cov-report=xml
       - name: Debug test failure
         working-directory: test
         if: ${{ always() && steps.testStep.outcome == 'failure' }}
         run: |
           source .venv/bin/activate
           pytest -qs --no-summary
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: true
       - name: Wipe files
         run: rm -rf test
