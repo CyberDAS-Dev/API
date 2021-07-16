@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import falcon
 
 from cyberdas.models import Session
@@ -64,7 +66,7 @@ class SessionMiddleware:
             self.config['exempt_routes'].append(uri_template)
         self.config['exempt_methods'][str(resource)] = local_conf.get('exempt_methods', []) # noqa
 
-    def _authenticate(self, req):
+    def authenticate(self, req):
         '''
         Аутентифицирует пользователя по его куки. Возвращает словарь с
         информацией о сессии.
@@ -85,13 +87,40 @@ class SessionMiddleware:
         # Примитивная валидация. 43 - длина строки из 256 бит в Base64.
         if len(sid) != 43 or sid.find('\x00') != -1:
             raise falcon.HTTPUnauthorized
+
         session = dbses.query(Session).filter_by(sid = sid).first()
+
         if session is None:
             log.error('[ПОДДЕЛЬНАЯ СЕССИЯ] sid %s' % sid)
             raise falcon.HTTPUnauthorized
 
+        if session.expires.replace(tzinfo = None) < datetime.now():
+            log.warning(
+                '[ПРОСРОЧЕННАЯ СЕССИЯ] uid %s, sid %s' % (session.uid, sid)
+            )
+            raise falcon.HTTPUnauthorized
+
         return {'uid': session.uid, 'sid': session.sid,
                 'csrf_token': session.csrf_token}
+
+    def csrf_protect(self, req):
+        '''
+        Проверяет CSRF-токен всех POST-запросов. Выбрасывает исключение, если
+        запрос не проходит проверку.
+
+        Аргументы:
+            req(необходим): текущий запрос.
+        '''
+        if req.method == 'POST':
+            csrf = req.get_header('XCSRF-Token')
+            if csrf is None or csrf != req.context['user']['csrf_token']:
+                req.context.logger.error(
+                    '[ПОПЫТКА CSRF] uid %s, sid %s'
+                    % (req.context['user']['uid'], req.context['user']['sid'])
+                )
+                raise falcon.HTTPUnauthorized(
+                    description = 'Неверный CSRF-токен'
+                )
 
     def process_resource(self, req, resp, resource, params):
         '''
@@ -111,16 +140,9 @@ class SessionMiddleware:
             return
 
         try:
-            req.context['user'] = self._authenticate(req)
+            req.context['user'] = self.authenticate(req)
         except falcon.HTTPError as e:
             req.context['user'] = None
             raise e
 
-        # все эндпоинты с POSTом, требующие аутентификции, должны быть
-        # защищены от CSRF
-        if req.method == 'POST':
-            csrf = req.get_header('XCSRF-Token')
-            if csrf is None or csrf != req.context['user']['csrf_token']:
-                raise falcon.HTTPUnauthorized(
-                    description = 'Неверный CSRF-токен'
-                )
+        self.csrf_protect(req)

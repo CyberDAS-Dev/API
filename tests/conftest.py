@@ -1,6 +1,7 @@
 import string
 import random
 import pytest
+import secrets
 from datetime import datetime
 
 import falcon_sqla
@@ -18,14 +19,14 @@ def client():
 
 
 def authorize(DB, uid):
-    sid = random.randrange(10**5, 10**6)
-    csrf_token = random.randrange(10**5, 10**6)
+    sid = secrets.token_urlsafe(32)
+    csrf_token = secrets.token_urlsafe(32)
     session = Session(uid = uid, sid = sid,
                       csrf_token = csrf_token,
                       user_agent = 'curl', ip = '127.0.0.1',
                       expires = datetime(datetime.now().year + 1, 12, 31))
     DB.setup_models(session)
-    return {"SESSIONID": sid, "XCSRF-Token": str(csrf_token)}
+    return {"SESSIONID": sid, "XCSRF-Token": csrf_token}
 
 
 def logout(DB, uid):
