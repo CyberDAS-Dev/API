@@ -1,3 +1,9 @@
+[![Build][build-shield]][build-url]
+[![Coverage][codecov-shield]][codecov-url]
+[![Uptime][uptime-shield]][uptime-url]
+[![Lines][lines-shield]][lines-url]
+[![Commit][commit-shield]][commit-url]
+
 <br />
 <p align="center">
   <a href="https://github.com/CyberDAS-Dev/API">
@@ -41,12 +47,18 @@
 <div align="center">
   <a href="https://www.python.org/">
     <img src="https://img.shields.io/static/v1?style=for-the-badge&message=Python&color=3776AB&logo=Python&logoColor=FFFFFF&label=" alt="Python">
+  </a>  
+  <a href="https://pytest.org">
+    <img src="https://img.shields.io/static/v1?style=for-the-badge&message=Pytest&color=0A9EDC&logo=Pytest&logoColor=FFFFFF&label=" alt="Pytest">
+  </a>
+  <a href="https://www.postgresql.org">
+    <img src="https://img.shields.io/static/v1?style=for-the-badge&message=PostgreSQL&color=4169E1&logo=PostgreSQL&logoColor=FFFFFF&label=" alt="PostgreSQL">
   </a>
   <a href="https://falcon.readthedocs.io">
     <img src="https://img.shields.io/static/v1?style=for-the-badge&message=Falcon&color=222222&logo=Falcon&logoColor=F0AD4E&label=" alt="Falcon">
   </a>
-  <a href="https://www.postgresql.org">
-    <img src="https://img.shields.io/static/v1?style=for-the-badge&message=PostgreSQL&color=4169E1&logo=PostgreSQL&logoColor=FFFFFF&label=" alt="PostgreSQL">
+  <a href="https://swagger.io">
+    <img src="https://img.shields.io/static/v1?style=for-the-badge&message=Swagger&color=222222&logo=Swagger&logoColor=85EA2D&label=" alt="Swagger">
   </a>
 </div>
 
@@ -165,3 +177,17 @@
 * [Александр Букреев](https://github.com/TarLung), оригинальный создатель проекта
 * [Студенческий комитет ДАС МГУ](https://vk.com/studcomdas)
 * [Best-README-Template](https://github.com/othneildrew/Best-README-Template)
+
+
+
+<!-- MARKDOWN LINKS & IMAGES -->
+[codecov-shield]: https://img.shields.io/codecov/c/gh/CyberDAS-Dev/API?style=flat-square
+[codecov-url]: https://app.codecov.io/gh/CyberDAS-Dev/API
+[build-shield]: https://img.shields.io/github/workflow/status/CyberDAS-Dev/API/run-tests?style=flat-square
+[build-url]: https://github.com/CyberDAS-Dev/API/actions/workflows/run-tests.yml
+[lines-shield]: https://img.shields.io/tokei/lines/github.com/CyberDAS-Dev/API?style=flat-square
+[lines-url]: https://codetabs.com/count-loc/count-loc-online.html
+[uptime-shield]: https://img.shields.io/website?down_color=lightgrey&down_message=down&style=flat-square&up_color=blue&up_message=up&url=https%3A%2F%2Fapi.cyberdas.net
+[uptime-url]: https://api.cyberdas.net
+[commit-shield]: https://img.shields.io/github/commit-activity/w/CyberDAS-Dev/API?style=flat-square
+[commit-url]: https://github.com/CyberDAS-Dev/API/commits/main
