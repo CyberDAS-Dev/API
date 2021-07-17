@@ -14,9 +14,11 @@ from .services import (
     PassChecker
 )
 
+# Инициализация компонентов
 cfg = get_cfg()
 mail = SignupMail(cfg)
 pass_checker = PassChecker()
+###
 
 
 def route(api):

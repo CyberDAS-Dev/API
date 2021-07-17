@@ -166,8 +166,9 @@ class TestResend:
 
     def test_bad_email(self, client):
         '''
-        Если пользователь указал некорректный эмэйл, возвращается HTTP 200,
-        с формулировкой 'если такой пользователь найден, то письмо отправлено'
+        Если пользователь указал некорректный или уже верифицированный эмэйл,
+        возвращается HTTP 200, с формулировкой 'если такой пользователь найден,
+        то письмо отправлено'
         '''
         resp = client.simulate_post(self.URI, json = {"email": "lol@das.net"})
         assert resp.status == falcon.HTTP_200
@@ -179,22 +180,3 @@ class TestResend:
                                     json = {"email": REGISTERED_USER_EMAIL})
         assert resp.status == falcon.HTTP_200
         self.smtp_mock.assert_called_once_with(ANY, REGISTERED_USER_EMAIL)
-
-    @pytest.fixture
-    def verified_user(self, oneUserDB):
-        with oneUserDB.session as dbses:
-            user = dbses.query(User).filter_by(email = REGISTERED_USER_EMAIL).first() # noqa
-            user.email_verified = True
-        yield
-        with oneUserDB.session as dbses:
-            user = dbses.query(User).filter_by(email = REGISTERED_USER_EMAIL).first() # noqa
-            user.email_verified = False
-
-    def test_verified_user(self, client, verified_user):
-        '''
-        Если уже верифицированный пользователь попросит переотправить письмо, то
-        вернется ошибка
-        '''
-        resp = client.simulate_post(self.URI,
-                                    json = {"email": REGISTERED_USER_EMAIL})
-        assert resp.status == falcon.HTTP_403

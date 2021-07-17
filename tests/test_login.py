@@ -39,17 +39,14 @@ class TestLogin:
         resp = client.simulate_post(self.URI)
         assert resp.status == falcon.HTTP_400
 
-    def test_bad_email(self, client, oneUserDB):
-        'При вводе неверного эмэйла возвращается 401 Unauthorized'
-        resp = client.simulate_post(self.URI, json = {'email': 'trash@mail.ru',
-                                                      'password': USER_PASS})
-        assert resp.status == falcon.HTTP_401
-
-    def test_bad_password(self, client, oneUserDB):
-        'При вводе неверного пароля возвращается 401 Unauthorized'
-        resp = client.simulate_post(self.URI, json = {'email': USER_EMAIL,
-                                                      'password': 'trash'})
-        assert resp.status == falcon.HTTP_401
+    @pytest.mark.parametrize("input_json", [
+        {"email": "bad@mail.com", "password": USER_PASS},
+        {"email": USER_EMAIL, "password": 'bad'}
+    ])
+    def test_bad_data(self, client, oneUserDB, input_json):
+        'При вводе неверного эмэйла или пароля возвращается 400 Bad Request'
+        resp = client.simulate_post(self.URI, json = input_json)
+        assert resp.status == falcon.HTTP_400
 
     @pytest.fixture(scope = 'class')
     def valid_post(self, client, oneUserDB):

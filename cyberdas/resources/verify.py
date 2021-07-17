@@ -25,15 +25,20 @@ class Verify(object):
         dbses = req.context.session
         log = req.context.logger
 
+        # Получение обязательного параметра token из query-строки
         token = req.get_param('token', required = True)
 
+        # Проверка токена и разбиение его на составляющие
         deciphered = self.mail.confirm_token(token)
         if deciphered is False:
             raise falcon.HTTPUnauthorized
+
+        # Подтверждение почты пользователя в базе данных
         user = dbses.query(User).filter_by(email = deciphered['email']).first()
         user.email_verified = True
         log.debug("[ПОЧТА ПОДТВЕРЖДЕНА] email %s" % deciphered['email'])
 
+        # Переадресация пользователя на указанный во время создания токена адрес
         if 'redirect' in deciphered:
             raise falcon.HTTPSeeOther(location = deciphered['redirect'])
         else:

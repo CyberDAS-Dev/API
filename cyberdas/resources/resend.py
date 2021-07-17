@@ -27,15 +27,18 @@ class Resend(object):
         dbses = req.context.session
         log = req.context.logger
 
+        # Получение данных из входящего JSONа
         data = req.get_media()
 
+        # Ищем пользователя с таким адресом почты в базе данных
         user = dbses.query(User).filter_by(email = data['email']).first()
-        if user is None:
-            resp.status = falcon.HTTP_200
-            return
-        if user.email_verified is True:
-            raise falcon.HTTPForbidden
 
-        self.mail.send_verification(req, data['email'])
-        log.debug("[EMAIL-ТОКЕН ПЕРЕОТПРАВЛЕН] email %s" % data['email'])
+        # Отправляем письмо пользователю, если он существует и неверифицирован
+        if user is not None and user.email_verified is False:
+            verify_url = self.mail.send_verification(req, data['email'])
+            log.debug('[ОТПРАВЛЕН EMAIL] email %s, link %s' % (data['email'],
+                                                               verify_url))
+
+        # Маскируем отсутствие пользователя в базе данных, возвращяя HTTP OK
+        # и обещая послать письмо в любом случае
         resp.status = falcon.HTTP_200
