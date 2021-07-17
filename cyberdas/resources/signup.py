@@ -14,8 +14,9 @@ class Signup(object):
     with open(path.abspath('cyberdas/static/signup_schema.json'), 'r') as f:
         signup_schema = json.load(f)
 
-    def __init__(self, mail_service, testing = False):
+    def __init__(self, mail_service, pass_checker, testing = False):
         self.mail = mail_service
+        self.pass_checker = pass_checker
         self._testing = testing
 
     @jsonschema.validate(signup_schema)
@@ -30,18 +31,34 @@ class Signup(object):
         dbses = req.context.session
         log = req.context.logger
 
+        # Получаем данные из входящего JSONа
         data = req.get_media()
 
+        # Проверка, что адрес почты не занят
         user = dbses.query(User).filter_by(email = data['email']).first()
         if user is not None:
-            raise falcon.HTTPForbidden(
-                title = '403 Forbidden',
+            log.debug('[ЗАНЯТЫЙ АДРЕС ПОЧТЫ] email %s' % data['email'])
+            raise falcon.HTTPBadRequest(
                 description = 'Такой адрес почты уже занят.'
             )
+
+        # Проверка, что указанный факультет существует
         faculty = dbses.query(Faculty).filter_by(name = data['faculty']).first()
         if faculty is None:
-            raise falcon.HTTPBadRequest
+            log.debug('[НЕСУЩЕСТВУЮЩИЙ ФАКУЛЬТЕТ] email %s' % data['email'])
+            raise falcon.HTTPBadRequest(
+                description = 'Такой факультет не существует.'
+            )
 
+        # Проверка сложности пароля
+        failed = self.pass_checker.check(data['password'])
+        if len(failed) > 0:
+            log.debug('[СЛАБЫЙ ПАРОЛЬ] email %s' % data['email'])
+            raise falcon.HTTPBadRequest(
+                description = 'Не соблюдены требования к паролю: %s' % ', '.join(failed) # noqa
+            )
+
+        # Добавление пользователя в базу данных
         newUser = User(
             email = data['email'], password = data['password'],
             name = data['name'], surname = data['surname'],
@@ -50,9 +67,11 @@ class Signup(object):
             faculty_id = faculty.id, email_verified = False, verified = False
         )
         dbses.add(newUser)
-        log.debug('[НОВЫЙ ПОЛЬЗОВАТЕЛЬ] email %s' % data['email'])
+        log.info('[НОВЫЙ ПОЛЬЗОВАТЕЛЬ] email %s' % data['email'])
 
+        # Отправка письма с подтверждением адреса почты
         verify_url = self.mail.send_verification(req, data['email'])
         log.debug('[ОТПРАВЛЕН EMAIL] email %s, link %s' % (data['email'],
                                                            verify_url))
+
         resp.status = falcon.HTTP_200

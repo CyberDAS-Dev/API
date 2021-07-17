@@ -9,6 +9,8 @@ from cyberdas.models import User, Faculty
 from cyberdas.config import get_cfg
 
 USER_EMAIL = 'user@cyberdas.net'
+USER_PASS = 'some!stRong12'
+FACULTY_NAME = 'факультет'
 REGISTERED_USER_EMAIL = 'second_user@das.net'
 
 
@@ -18,7 +20,7 @@ def oneUserDB():
     База данных, содержащая одного уже зарегистрированного пользователя
     '''
     db = MockDB()
-    faculty = Faculty(id = 1, name = 'факультет')
+    faculty = Faculty(id = 1, name = FACULTY_NAME)
     users = generate_users(1, [REGISTERED_USER_EMAIL])
     users[0].faculty = faculty
     db.setup_models(users)
@@ -37,10 +39,10 @@ class TestSignup:
 
     @pytest.mark.parametrize("input_json", [
         {},
-        {"email": "lol@mail.ru", "name": "Иван"},
+        {"email": USER_EMAIL, "name": "Иван"},
         {"name": "Иван", "surname": "Иванов", "patronymic": "Иванович"},
-        {"email": "lol@mail.ru", "password": "lol", "faculty": "факультет"},
-        {"email": "lol@mail.ru", "password": "lol", "faculty": "факультет",
+        {"email": USER_EMAIL, "password": USER_PASS, "faculty": FACULTY_NAME},
+        {"email": USER_EMAIL, "password": USER_PASS, "faculty": FACULTY_NAME,
          "name": "Иван", "patronymic": "Иванович"}
     ])
     def test_lacking_data_post(self, client, input_json):
@@ -48,37 +50,26 @@ class TestSignup:
         resp = client.simulate_post(self.URI, json = input_json)
         assert resp.status == falcon.HTTP_400
 
-    def test_bad_email_post(self, client):
-        'Если пользователь ввел некорректный адрес почты, возвращается HTTP 400'
-        resp = client.simulate_post(
-            self.URI,
-            json = {
-                "email": "badmail", "password": "lol", "faculty": "факультет",
-                "name": "Иван", "surname": "Иванов"
-            }
-        )
-        assert resp.status == falcon.HTTP_400
-
-    def test_already_registered_post(self, client, oneUserDB):
-        'Если пользователь ввел занятый адрес почты, возвращается HTTP 403'
-        resp = client.simulate_post(
-            self.URI,
-            json = {
-                "email": REGISTERED_USER_EMAIL, "password": "lol",
-                "faculty": "факультет", "name": "Иван", "surname": "Иванов"
-            }
-        )
-        assert resp.status == falcon.HTTP_403
-
-    def test_bad_faculty_post(self, client, oneUserDB):
-        'Если пользователь ввел занятый адрес почты, возвращается HTTP 403'
-        resp = client.simulate_post(
-            self.URI,
-            json = {
-                "email": "lol@mail.ru", "password": "lol",
-                "faculty": "kek", "name": "Иван", "surname": "Иванов"
-            }
-        )
+    @pytest.mark.parametrize("input_json", [
+        {"email": "badmail", "password": USER_PASS, "faculty": FACULTY_NAME,
+         "name": "Иван", "surname": "Иванов"},
+        {"email": USER_EMAIL, "password": 'bad', "faculty": FACULTY_NAME,
+         "name": "Иван", "surname": "Иванов"},
+        {"email": USER_EMAIL, "password": USER_PASS, "faculty": "bad",
+         "name": "Иван", "surname": "Иванов"},
+        {"email": REGISTERED_USER_EMAIL, "password": USER_PASS,
+         "faculty": FACULTY_NAME, "name": "Иван", "surname": "Иванов"},
+    ])
+    def test_bad_data_post(self, client, input_json, oneUserDB):
+        '''
+        Если пользователь ввел:
+        - некорректный адрес почты
+        - слабый пароль
+        - несуществующий факультет
+        - уже зарегистрированную почту
+        то, возвращается HTTP 400
+        '''
+        resp = client.simulate_post(self.URI, json = input_json)
         assert resp.status == falcon.HTTP_400
 
     @patch('cyberdas.services.SignupMail.send_verification', new = smtp_mock)
@@ -94,8 +85,8 @@ class TestSignup:
         resp = client.simulate_post(
             self.URI,
             json = {
-                "email": USER_EMAIL, "password": "das",
-                "faculty": "факультет", "name": "Иван", "surname": "Иванов"
+                "email": USER_EMAIL, "password": USER_PASS,
+                "faculty": FACULTY_NAME, "name": "Иван", "surname": "Иванов"
             }
         )
         assert resp.status == falcon.HTTP_200
