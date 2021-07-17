@@ -10,6 +10,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
 from .__meta__ import Base
+from cyberdas.utils.hash_type import HashType
 
 
 class Session(Base):
@@ -18,7 +19,9 @@ class Session(Base):
 
         Поля:
             sid - Primary key String
-                Уникальный идентификатор сессии, передающийся клиенту
+                Уникальный идентификатор сессии, передающийся клиенту. Хранится
+                в виде хэша, - в случае если база данных окажется в руках
+                злоумышленников, они не смогут 'угнать' ни одну сессию.
 
             uid - Foreign key Integer
                 Уникальный идентификатор пользователя, с которым связана сессия
@@ -47,11 +50,11 @@ class Session(Base):
     '''
 
     __tablename__ = 'sessions'
-    sid = Column(String, primary_key = True)
+    sid = Column(HashType('sha256'), primary_key = True)
     uid = Column(Integer, ForeignKey('users.id'), nullable = False)
-    csrf_token = Column(String, unique = True, nullable = False)
+    csrf_token = Column(String(64), unique = True, nullable = False)
     user_agent = Column(Text, nullable = False)
-    ip = Column(String, nullable = False)
+    ip = Column(String(16), nullable = False)
     expires = Column(DateTime(timezone = True), nullable = False)
     created_at = Column(
         DateTime(timezone = True), nullable = False,
