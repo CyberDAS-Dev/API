@@ -51,11 +51,11 @@ class Signup(object):
             )
 
         # Проверка сложности пароля
-        failed = self.pass_checker.check(data['password'])
-        if len(failed) > 0:
+        suggestions = self.pass_checker.check(data['password'], data['email'])
+        if len(suggestions) > 0:
             log.debug('[СЛАБЫЙ ПАРОЛЬ] email %s' % data['email'])
             raise falcon.HTTPBadRequest(
-                description = 'Не соблюдены требования к паролю: %s' % ', '.join(failed) # noqa
+                description = 'Слабый пароль. %s' % ' '.join(suggestions)
             )
 
         # Добавление пользователя в базу данных

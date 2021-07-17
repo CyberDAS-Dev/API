@@ -16,7 +16,8 @@ requires = [
     'passlib==1.7.*',
     'itsdangerous==2.0.*',
     'jinja2==3.0.*',
-    'jsonschema'
+    'jsonschema',
+    'zxcvbn==4.4.*'
 ]
 
 tests_require = [
