@@ -67,6 +67,10 @@ class User(Base):
             session - один-ко-многим
                 Задает соответствие между пользователем и всеми его активными
                 сессиями
+
+            long_session - один-ко-многим
+                Задает соответствие между пользователем и всеми его долгими
+                сессиями, т.е начатыми с помощью `Remember Me`
     '''
 
     __tablename__ = 'users'
@@ -87,3 +91,4 @@ class User(Base):
 
     faculty = relationship('Faculty', back_populates = 'population')
     session = relationship('Session', back_populates = 'user')
+    long_session = relationship('LongSession', back_populates = 'user')
