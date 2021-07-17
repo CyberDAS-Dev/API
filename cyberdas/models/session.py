@@ -4,7 +4,8 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
-    DateTime
+    DateTime,
+    Boolean
 )
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -41,8 +42,11 @@ class Session(Base):
 
             created_at - DateTime
                 Хранит дату последней выдачи куки
-                При выдаче куки автоматически устанавливается БД с помощью
-                SQL now()
+                При выдаче куки устанавливается БД с помощью SQL now()
+
+            unsafe - Boolean
+                Флаг, ограничивающий некоторые действия пользователя, так как
+                его сессия была начата без ввода пароля, с помощью токена
 
         Взаимоотношения:
             user - многие-к-одному
@@ -60,5 +64,6 @@ class Session(Base):
         DateTime(timezone = True), nullable = False,
         server_default = func.now()
     )
+    unsafe = Column(Boolean, nullable = False)
 
     user = relationship('User', back_populates = 'session')
