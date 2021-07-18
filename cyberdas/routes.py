@@ -8,6 +8,7 @@ from .resources import (
     Refresh,
     Verify,
     Resend,
+    Restore
 )
 from .services import (
     SignupMail,
@@ -32,6 +33,7 @@ def route(api):
     api.add_route('/login', Login(session_manager))
     api.add_route('/logout', Logout(session_manager))
     api.add_route('/refresh', Refresh(session_manager))
+    api.add_route('/restore', Restore(session_manager))
     api.add_route('/verify', Verify(mail))
     api.add_route('/resend', Resend(mail))
     api.add_static_route('/', path.abspath('cyberdas/static/'))

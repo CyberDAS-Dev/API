@@ -47,4 +47,12 @@ class Login(object):
         resp.set_cookie(**s_cookie)
         resp.set_header(name = 'XCSRF-Token', value = csrf_token)
 
+        # Проверяем наличие параметра remember в query-строке
+        remember = req.get_param_as_bool('remember')
+
+        # Выдаем пользователю remember-me куки, если он попросил
+        if remember:
+            l_cookie = self.manager.start_l_session(req, user, s_cookie)
+            resp.set_cookie(**l_cookie)
+
         resp.status = falcon.HTTP_200
