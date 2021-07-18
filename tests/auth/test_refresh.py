@@ -56,4 +56,4 @@ class TestRefresh:
         assert new_expiration != old_expiration
 
         next_session_expires = (now + timedelta(seconds = SES_LENGTH))
-        assert (new_expiration - next_session_expires).total_seconds() <= 0.01
+        assert (new_expiration - next_session_expires).total_seconds() <= 0.1
