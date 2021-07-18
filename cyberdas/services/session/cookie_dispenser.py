@@ -19,7 +19,10 @@ class CookieDispenser:
 
     @classmethod
     def extract_session(cls, cookies):
-        return cookies['SESSIONID']
+        try:
+            return cookies['SESSIONID']
+        except KeyError:
+            return None
 
     @classmethod
     def l_session_cookie(cls, selector, validator, max_age = None):
@@ -29,4 +32,7 @@ class CookieDispenser:
 
     @classmethod
     def extract_l_session(cls, cookies):
-        return cookies['REMEMBER'].split(':')
+        try:
+            return cookies['REMEMBER'].split(':')
+        except KeyError:
+            return None

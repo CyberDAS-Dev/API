@@ -1,5 +1,7 @@
 from .manager import SessionManager
 
+from cyberdas.exceptions import BadAuthError
+
 
 class ManagerProxy:
 
@@ -51,3 +53,14 @@ class ManagerProxy:
 
         req.context.logger.debug("[ПРОДЛЕНА СЕССИЯ] uid %s" % user['uid'])
         return result
+
+    def authorize(self, req):
+        db = req.context.session
+        cookie = req.cookies
+
+        try:
+            result = self.manager.authorize(db, cookie)
+            return result
+        except BadAuthError:
+            req.context.logger.warning("[ПОДДЕЛЬНАЯ СЕССИЯ]")
+            raise

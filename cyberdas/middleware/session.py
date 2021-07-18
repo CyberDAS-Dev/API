@@ -1,8 +1,6 @@
-from datetime import datetime
-
 import falcon
 
-from cyberdas.models import Session
+from cyberdas.services.session import SessionManager
 
 
 class SessionMiddleware:
@@ -22,6 +20,7 @@ class SessionMiddleware:
             exempt_methods(list, опционально): список методов, не требующих
             аутентификации.
         '''
+        self.manager = SessionManager()
         self.config = dict()
         self.config['exempt_routes'] = exempt_routes
         self.config['exempt_methods'] = dict()
@@ -66,43 +65,6 @@ class SessionMiddleware:
             self.config['exempt_routes'].append(uri_template)
         self.config['exempt_methods'][str(resource)] = local_conf.get('exempt_methods', []) # noqa
 
-    def authenticate(self, req):
-        '''
-        Аутентифицирует пользователя по его куки. Возвращает словарь с
-        информацией о сессии.
-
-        Аргументы:
-            req(необходим): текущий запрос, необходим для получения
-            доступа к БД.
-        '''
-        dbses = req.context.session
-        log = req.context.logger
-        session_cookies = req.get_cookie_values('SESSIONID')
-        if session_cookies is None or len(session_cookies) != 1:
-            raise falcon.HTTPUnauthorized(
-                description = 'Неверное число SESSIONID-куки (должен быть 1)'
-            )
-
-        sid = session_cookies[0]
-        # Примитивная валидация. 43 - длина строки из 256 бит в Base64.
-        if len(sid) != 43 or sid.find('\x00') != -1:
-            raise falcon.HTTPUnauthorized
-
-        session = dbses.query(Session).filter_by(sid = sid).first()
-
-        if session is None:
-            log.error('[ПОДДЕЛЬНАЯ СЕССИЯ] sid %s' % sid)
-            raise falcon.HTTPUnauthorized
-
-        if session.expires.replace(tzinfo = None) < datetime.now():
-            log.warning(
-                '[ПРОСРОЧЕННАЯ СЕССИЯ] uid %s, sid %s' % (session.uid, sid)
-            )
-            raise falcon.HTTPUnauthorized
-
-        return {'uid': session.uid, 'sid': session.sid,
-                'csrf_token': session.csrf_token}
-
     def csrf_protect(self, req):
         '''
         Проверяет CSRF-токен всех POST-запросов. Выбрасывает исключение, если
@@ -140,9 +102,9 @@ class SessionMiddleware:
             return
 
         try:
-            req.context['user'] = self.authenticate(req)
-        except falcon.HTTPError as e:
+            req.context['user'] = self.manager.authorize(req)
+        except Exception:
             req.context['user'] = None
-            raise e
+            raise falcon.HTTPUnauthorized
 
         self.csrf_protect(req)

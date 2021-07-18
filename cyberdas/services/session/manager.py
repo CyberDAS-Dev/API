@@ -1,7 +1,7 @@
 from datetime import datetime
 import secrets
 
-from cyberdas.exceptions import NoSessionError
+from cyberdas.exceptions import BadAuthError, NoSessionError
 
 from .db_interface import Session, LongSession
 from .cookie_dispenser import CookieDispenser
@@ -95,3 +95,27 @@ class SessionManager:
     def refresh_session(self, db, **ids):
         self.session.prolong(db, **ids)
         return self.cookie.session_cookie(ids['sid'])
+
+    def authorize(self, db, cookie):
+        '''
+        Аутентифицирует пользователя по его куки. Возвращает словарь с
+        информацией о сессии.
+
+        Аргументы:
+            db(необходим): активная сессия в базе данных
+
+            cookie(dict, необходим): словарь с куки запроса
+        '''
+        sid = self.cookie.extract_session(cookie)
+        ids = {'sid': sid}
+
+        try:
+            assert sid is not None
+            assert len(sid) == 43  # len(self.gen_token())
+            assert sid.find('\x00') == -1
+            ses = self.session.get(db, **ids)
+            assert ses.expires.replace(tzinfo = None) > datetime.now()
+        except (AssertionError, NoSessionError):
+            raise BadAuthError
+
+        return {'uid': ses.uid, 'sid': ses.sid, 'csrf_token': ses.csrf_token}
