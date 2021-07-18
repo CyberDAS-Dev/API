@@ -5,6 +5,14 @@ from cyberdas.exceptions import BadAuthError
 
 class ManagerProxy:
 
+    '''
+    Класс, проксирующий запросы к SessionManager. Он нужен для упрощения вида
+    вызовов методов, так как он занимается преобразование аргументов и ведением
+    логов.
+
+    Во внешние модули экспортируется как SessionManager.
+    '''
+
     def __init__(self):
         self.manager = SessionManager()
 

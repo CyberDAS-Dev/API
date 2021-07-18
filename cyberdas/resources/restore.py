@@ -2,6 +2,7 @@ import falcon
 
 from cyberdas.exceptions import SecurityError
 
+
 class Restore:
 
     auth = {'disabled': 1}
