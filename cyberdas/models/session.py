@@ -51,6 +51,10 @@ class Session(Base):
         Взаимоотношения:
             user - многие-к-одному
                 Задает соответствие между пользователем и всеми его сессиями
+
+            associated - один-к-одному
+                Задает соответствие между этой сессией, и долгой сессией,
+                в рамках которой была создана эта.
     '''
 
     __tablename__ = 'sessions'
@@ -67,3 +71,4 @@ class Session(Base):
     unsafe = Column(Boolean, nullable = False)
 
     user = relationship('User', back_populates = 'session')
+    associated = relationship('LongSession', back_populates = 'associated')
