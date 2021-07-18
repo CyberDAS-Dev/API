@@ -60,6 +60,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/LoginRequest'
+
+      parameters:
+        - name: remember
+          in: query
+          schema: 
+            type: boolean
+          required: false
+          allowEmptyValue: true
+          description: Если присутствует в query, то помимо короткой сессии создается и долгая двухнедельная.
       
       responses:
         '200':
@@ -100,6 +109,36 @@ paths:
               schema: 
                 type: string
                 example: SESSIONID=abcde12345; Path=/; HttpOnly
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /restore:
+
+    get:
+      summary: Позволяет аутентифицироваться по токену `Remember me` без пароля
+      tags:
+        - Аутентификация
+      security: []   # доступно без аутентификации
+
+      parameters:
+        - in: cookie 
+          name: REMEMBER
+          schema:
+            type: string
+          required: true
+
+      responses:
+        '200':
+          description: Сессия и новый токен успешно созданы
+          headers: 
+            Set-Cookie:
+              schema: 
+                type: string
+                example: SESSIONID=abcde12345; Path=/; HttpOnly
+            XCSRF-token: 
+              schema:
+                type: string
+                example: WfF1szMUHhiokx9AHFply5L2xAOfjRkE
         default:
           $ref: '#/components/responses/UnexpectedError'
 
