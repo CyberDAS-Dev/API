@@ -1,7 +1,7 @@
 from datetime import datetime
 import secrets
 
-from cyberdas.exceptions import BadAuthError, NoSessionError
+from cyberdas.exceptions import BadAuthError, NoSessionError, SessionError
 
 from .db_interface import Session, LongSession
 from .cookie_dispenser import CookieDispenser
@@ -9,15 +9,42 @@ from .cookie_dispenser import CookieDispenser
 
 class SessionManager:
 
+    '''
+    Класс, управляющий пользовательскими сессиями. Позволяет централизовать весь
+    код, связанный с сессиям и упростить введение правок.
+
+    Не экспортируется во внешние модули, для этого используется ManagerProxy,
+    значительно упрощающий вызов методов.
+    '''
+
     def __init__(self):
         self.session = Session
         self.l_session = LongSession
         self.cookie = CookieDispenser
 
     def gen_token(cls, length = 32):
+        '''
+        Генерирует случайную 256-битную (по умолчанию) строку.
+
+        Аргументы:
+            length(int, опционально): число байт в токене
+        '''
         return secrets.token_urlsafe(length)
 
     def start_session(self, db, continued = False, **kwargs):
+        '''
+        Начинает новую обычную сессию, возвращая словарь с параметрами куки и
+        csrf-токен.
+
+        Аргументы:
+            db(необходим): активная сессия БД
+
+            continued(boolean, опционально): была ли сессия начата без ввода
+                пароля
+
+            kwargs(dict, необходимо): словарь со значениями всех полей в базе д
+                анных, используемых для инициаилизации, например {'uid': '2'}
+        '''
         # Генерируем безопасные токены для идентификатора сессии и csrf-токена
         sid = self.gen_token()
         csrf_token = self.gen_token()
@@ -29,6 +56,19 @@ class SessionManager:
         return self.cookie.session_cookie(sid), csrf_token
 
     def start_l_session(self, db, series = '', **kwargs):
+        '''
+        Начинает новую долгую сессию, возвращая словарь с параметрами куки.
+
+        Аргументы:
+            db(необходим): активная сессия БД
+
+            series(string, опционально): если предоставлено значение, то новая
+                сессия будет принадлежать к заданной линейке токенов, иначе
+                будет создана новая
+
+            kwargs(dict, необходимо): словарь со значениями всех полей в базе д
+                анных, используемых для инициаилизации, например {'uid': '2'}
+        '''
         # Генерируем безопасные токены для идентификатора сессии и csrf-токена
         selector = series or self.gen_token(12)
         validator = self.gen_token()
@@ -40,6 +80,18 @@ class SessionManager:
         return self.cookie.l_session_cookie(selector, validator)
 
     def continue_session(self, db, cookies):
+        '''
+        Начинает новую короткую сессию и создает новую долгую сессию, если
+        у пользователя есть на это право. Возвращает словари с параметрами куки,
+        соответствующие двум сессиям и csrf-токен.
+        В случае, если пользователь не может воспользоваться токеном, возвращает
+        ошибку
+
+        Аргументы:
+            db(необходим): активная сессия БД
+
+            cookies(dict, необходимо): предоставленные пользователям куки
+        '''
         # Извлекаем селектор и валидатор из куки
         selector, validator = self.cookie.extract_l_session(cookies)
         ids = {'selector': selector, 'validator': validator}
@@ -50,13 +102,13 @@ class SessionManager:
 
         # Проверяем, что токен не просрочен
         if old.expires.replace(tzinfo = None) < datetime.now():
-            raise Exception("Токен просрочен")
+            raise SessionError("Токен просрочен")
 
         # Проверяем, что ассоциированная сессия завершена
         try:
             associated_ses = self.session.get(db, sid = old.associated_sid)
             if associated_ses is not None:
-                raise Exception("Ассоциированная сессия еще на завершена")
+                raise SessionError("Ассоциированная сессия еще на завершена")
         except NoSessionError:
             pass
 
@@ -78,6 +130,17 @@ class SessionManager:
         return (l_cookie, s_cookie, csrf_token), old.uid
 
     def end_session(self, db, **ids):
+        '''
+        Заканчивает заданную короткую сессию, а так же, если она есть, закрывает
+        долгую сессию, связанную с этой короткой. Возвращает массив с
+        параметрами куки, которые позволяют удалить их на стороне клиентов.
+
+        Аргументы:
+            db(необходим): активная сессия БД
+
+            ids(неободимо): словарь из аргументов, использующихся для
+                однозначной идентификации объекта в БД, например {'id': 2}
+        '''
         to_return = list()
         ses = self.session.get(db, **ids)
 
@@ -93,6 +156,16 @@ class SessionManager:
         return to_return
 
     def refresh_session(self, db, **ids):
+        '''
+        Продлевает заданную сессию на еще один период действия сессии.
+        Возвращает куки с новым временем истечения.
+
+        Аргументы:
+            db(необходим): активная сессия БД
+
+            ids(неободимо): словарь из аргументов, использующихся для
+                однозначной идентификации объекта в БД, например {'id': 2}
+        '''
         self.session.prolong(db, **ids)
         return self.cookie.session_cookie(ids['sid'])
 
