@@ -2,7 +2,7 @@ openapi: '3.0.2'
 
 info:
   title: CyberDAS API
-  version: '0.3'
+  version: '0.4'
   contact:
     email: api@cyberdas.net
 
@@ -248,6 +248,9 @@ paths:
 
   /queues/{queueName}:
 
+    parameters:
+      - $ref: '#/components/parameters/queueName'
+
     get:
       summary: Возвращает информацию о запрошенной очереди
       tags:
@@ -271,16 +274,6 @@ paths:
         - Очереди
       security:
         - adminAuth: []
-      
-      parameters:
-        - name: queueName
-          in: path
-          required: true
-          allowEmptyValue: false
-          description: Имя очереди
-          schema:
-            type: string 
-            example: "living"
 
       requestBody:
         $ref: '#/components/requestBodies/QueuePut'
@@ -303,16 +296,6 @@ paths:
         - Очереди
       security:
         - adminAuth: []
-      
-      parameters:
-        - name: queueName
-          in: path
-          required: true
-          allowEmptyValue: false
-          description: Имя очереди
-          schema:
-            type: string 
-            example: "living"
 
       responses:
         '204':
@@ -326,20 +309,15 @@ paths:
 
   /queues/{queueName}/slots:
 
+    parameters:
+      - $ref: '#/components/parameters/queueName'
+
     get:
       summary: Возвращает слоты в выбранной очереди в указанный промежуток дат
       tags:
         - Очереди
       
       parameters:
-        - name: queueName
-          in: path
-          required: true
-          allowEmptyValue: false
-          description: Имя очереди
-          schema:
-            type: string 
-            example: "living"
         - name: day
           in: query
           required: true
@@ -379,16 +357,6 @@ paths:
         - Очереди
       security:
         - adminAuth: []
-      
-      parameters:
-        - name: queueName
-          in: path
-          required: true
-          allowEmptyValue: false
-          description: Имя очереди
-          schema:
-            type: string 
-            example: "living"
 
       requestBody:
         $ref: '#/components/requestBodies/SlotsPut'
@@ -412,16 +380,6 @@ paths:
       security:
         - adminAuth: []
       
-      parameters:
-        - name: queueName
-          in: path
-          required: true
-          allowEmptyValue: false
-          description: Имя очереди
-          schema:
-            type: string 
-            example: "living"
-      
       requestBody:
         $ref: '#/components/requestBodies/SlotsPatch'
       
@@ -437,27 +395,14 @@ paths:
 
   /queues/{queueName}/slots/{slotId}:
 
+    parameters:
+      - $ref: '#/components/parameters/queueName'
+      - $ref: '#/components/parameters/slotId'
+
     get:
       summary: Возвращает информацию о запрошенном слоте в очереди
       tags:
         - Очереди
-
-      parameters:
-        - name: queueName
-          in: path
-          required: true
-          allowEmptyValue: false
-          description: Имя очереди
-          schema:
-            type: string 
-            example: "living"
-        - name: slotId
-          in: path
-          required: true
-          allowEmptyValue: false
-          description: ID слота
-          schema:
-            type: integer
 
       responses:
         '200':
@@ -477,23 +422,6 @@ paths:
         - Очереди
       security:
         - adminAuth: []
-      
-      parameters:
-        - name: queueName
-          in: path
-          required: true
-          allowEmptyValue: false
-          description: Имя очереди
-          schema:
-            type: string 
-            example: "living"
-        - name: slotId
-          in: path
-          required: true
-          allowEmptyValue: false
-          description: ID слота
-          schema:
-            type: integer
 
       responses:
         '204':
@@ -507,27 +435,14 @@ paths:
 
   /queues/{queueName}/slots/{slotId}/reservation:
 
+    parameters:
+      - $ref: '#/components/parameters/queueName'
+      - $ref: '#/components/parameters/slotId'
+
     post:
       summary: Занять выбранный слот в выбранной очереди
       tags:
         - Очереди
-      
-      parameters:
-        - name: queueName
-          in: path
-          required: true
-          allowEmptyValue: false
-          description: Имя очереди
-          schema:
-            type: string 
-            example: "living"
-        - name: slotId
-          in: path
-          required: true
-          allowEmptyValue: false
-          description: ID слота
-          schema:
-            type: integer
       
       responses:
         '200':
@@ -551,23 +466,6 @@ paths:
         # Нужно либо cookieAuth, либо adminAuth
         - cookieAuth: []
         - adminAuth: []
-      
-      parameters:
-        - name: queueName
-          in: path
-          required: true
-          allowEmptyValue: false
-          description: Имя очереди
-          schema:
-            type: string 
-            example: "living"
-        - name: slotId
-          in: path
-          required: true
-          allowEmptyValue: false
-          description: ID слота
-          schema:
-            type: integer
 
       responses:
         '204':
@@ -737,6 +635,24 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
 
+
+  parameters:
+    queueName:
+      name: queueName
+      in: path
+      required: true
+      description: Имя очереди
+      schema:
+        type: string
+        example: "living"
+    slotId:
+      name: slotId
+      in: path
+      required: true
+      description: ID запрашиваемого слота
+      schema:
+        type: integer
+        example: 23
 
 
   requestBodies:
