@@ -189,7 +189,7 @@ paths:
                 type: string
                 example: cyberdas.net/verify
         '401':
-          $ref: '#/components/responses/UnathorizedError'
+          $ref: '#/components/responses/UnauthenticatedError'
         default:
           $ref: '#/components/responses/UnexpectedError'
 
@@ -204,7 +204,7 @@ paths:
         '200':
           description: Сессия успешно завершена.
         '401':
-          $ref: '#/components/responses/UnathorizedError'
+          $ref: '#/components/responses/UnauthenticatedError'
         default:
           $ref: '#/components/responses/UnexpectedError'
 
@@ -223,7 +223,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
         '401':
-          $ref: '#/components/responses/UnathorizedError'
+          $ref: '#/components/responses/UnauthenticatedError'
         default:
           $ref: '#/components/responses/UnexpectedError'
 
@@ -242,7 +242,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Queues'
         '401':
-          $ref: '#/components/responses/UnathorizedError'
+          $ref: '#/components/responses/UnauthenticatedError'
         default:
           $ref: '#/components/responses/UnexpectedError'
   
@@ -291,7 +291,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Slots'
         '401':
-          $ref: '#/components/responses/UnathorizedError'
+          $ref: '#/components/responses/UnauthenticatedError'
         default:
           $ref: '#/components/responses/UnexpectedError'
     
@@ -327,7 +327,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Slot'
         '401':
-          $ref: '#/components/responses/UnathorizedError'
+          $ref: '#/components/responses/UnauthenticatedError'
         default:
           $ref: '#/components/responses/UnexpectedError'
 
@@ -357,7 +357,7 @@ paths:
         '200':
           description: Успешная запись
         '401':
-          $ref: '#/components/responses/UnathorizedError'
+          $ref: '#/components/responses/UnauthenticatedError'
         '403':
           description: Этот слот уже занят или Вы уже записались в эту очередь
           content:
@@ -511,13 +511,19 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
 
-    UnathorizedError:
-      description: Отсутствует право доступа к ресурсу
+    UnauthenticatedError:
+      description: Неизвестный пользователь
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
 
+    UnauthorizedError:
+      description: Отсутствует право доступа
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
 
   securitySchemes:
 
