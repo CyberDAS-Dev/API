@@ -246,6 +246,25 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   
+  /queues/{queueName}:
+
+    get:
+      summary: Возвращает информацию о запрошенной очереди
+      tags:
+        - Очереди
+
+      responses:
+        '200':
+          description: JSON-объект с информацией о очереди
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Queue'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
   /queues/{queueName}/slots:
 
     get:
@@ -330,6 +349,8 @@ paths:
           $ref: '#/components/responses/UnauthenticatedError'
         default:
           $ref: '#/components/responses/UnexpectedError'
+
+  /queues/{queueName}/slots/{slotId}/reservation:
 
     post:
       summary: Занять выбранный слот в выбранной очереди
