@@ -1,0 +1,33 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$ref": "#/definitions/QueuePutRequest",
+    "definitions": {
+        "QueuePutRequest": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "startDate": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "endDate": {
+                    "type": "string",
+                    "format": "date"
+                }
+            },
+            "required": [
+                "title",
+                "description",
+                "startDate",
+                "endDate"
+            ],
+            "title": "QueuePutRequest"
+        }
+    }
+}

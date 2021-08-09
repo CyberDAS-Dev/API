@@ -1,0 +1,14 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$ref": "#/definitions/SlotsPatchRequest",
+    "definitions": {
+        "SlotsPatchRequest": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "date-time"
+            },
+            "title": "SlotsPatchRequest"
+        }
+    }
+}
