@@ -439,6 +439,7 @@ components:
           format: date
       required:
         - name
+        - title
         - description
         - startDate
         - endDate
