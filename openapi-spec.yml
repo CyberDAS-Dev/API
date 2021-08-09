@@ -265,6 +265,70 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
 
+    put:
+      summary: Создать или заменить ресурс очереди
+      tags:
+        - Очереди
+      security:
+        - adminAuth: []
+      
+      parameters:
+        - name: queueName
+          in: path
+          required: true
+          allowEmptyValue: false
+          description: Имя очереди
+          schema:
+            type: string 
+            example: "living"
+
+      requestBody:
+        required: true
+        description: JSON-объект, содержащий информацию для создания очереди
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueuePutRequest'
+      
+      responses:
+        '201':
+          description: Очередь создана
+        '204':
+          description: Очередь заменена
+        '401':
+          $ref: '#/components/responses/UnauthenticatedError'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+    delete:
+      summary: Удалить ресурс очереди
+      tags:
+        - Очереди
+      security:
+        - adminAuth: []
+      
+      parameters:
+        - name: queueName
+          in: path
+          required: true
+          allowEmptyValue: false
+          description: Имя очереди
+          schema:
+            type: string 
+            example: "living"
+
+      responses:
+        '204':
+          description: Очередь удалена
+        '401':
+          $ref: '#/components/responses/UnauthenticatedError'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
   /queues/{queueName}/slots:
 
     get:
@@ -314,6 +378,78 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
     
+    put:
+      summary: Создать или заменить коллекцию слотов очереди
+      tags:
+        - Очереди
+      security:
+        - adminAuth: []
+      
+      parameters:
+        - name: queueName
+          in: path
+          required: true
+          allowEmptyValue: false
+          description: Имя очереди
+          schema:
+            type: string 
+            example: "living"
+
+      requestBody:
+        required: true
+        description: JSON-объект, содержащий информацию для создания слотов
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SlotsPutRequest'
+      
+      responses:
+        '201':
+          description: Слоты созданы
+        '204':
+          description: Слоты заменены
+        '401':
+          $ref: '#/components/responses/UnauthenticatedError'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+    patch:
+      summary: Модифицировать коллекцию слотов очереди
+      tags:
+        - Очереди
+      security:
+        - adminAuth: []
+      
+      parameters:
+        - name: queueName
+          in: path
+          required: true
+          allowEmptyValue: false
+          description: Имя очереди
+          schema:
+            type: string 
+            example: "living"
+      
+      requestBody:
+        required: true
+        description: JSON-объект, содержащий информацию для модификации слотов
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SlotsPatchRequest'
+      
+      responses:
+        '204':
+          description: Слоты изменены
+        '401':
+          $ref: '#/components/responses/UnauthenticatedError'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
   /queues/{queueName}/slots/{slotId}:
 
     get:
@@ -347,6 +483,40 @@ paths:
                 $ref: '#/components/schemas/Slot'
         '401':
           $ref: '#/components/responses/UnauthenticatedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+    delete:
+      summary: Удалить слот
+      tags:
+        - Очереди
+      security:
+        - adminAuth: []
+      
+      parameters:
+        - name: queueName
+          in: path
+          required: true
+          allowEmptyValue: false
+          description: Имя очереди
+          schema:
+            type: string 
+            example: "living"
+        - name: slotId
+          in: path
+          required: true
+          allowEmptyValue: false
+          description: ID слота
+          schema:
+            type: integer
+
+      responses:
+        '204':
+          description: Слот удален
+        '401':
+          $ref: '#/components/responses/UnauthenticatedError'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
         default:
           $ref: '#/components/responses/UnexpectedError'
 
@@ -388,6 +558,41 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
 
+    delete:
+      summary: Отменить бронирование слота
+      tags:
+        - Очереди
+      security:
+        # Нужно либо cookieAuth, либо adminAuth
+        - cookieAuth: []
+        - adminAuth: []
+      
+      parameters:
+        - name: queueName
+          in: path
+          required: true
+          allowEmptyValue: false
+          description: Имя очереди
+          schema:
+            type: string 
+            example: "living"
+        - name: slotId
+          in: path
+          required: true
+          allowEmptyValue: false
+          description: ID слота
+          schema:
+            type: integer
+
+      responses:
+        '204':
+          description: Запись удалена
+        '401':
+          $ref: '#/components/responses/UnauthenticatedError'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
 
 components: 
 
@@ -554,6 +759,10 @@ components:
       in: cookie
       name: SESSIONID
 
+    adminAuth:
+      type: apiKey
+      in: cookie
+      name: ADMINID
 
 
 # Для совершения всех действий требуется активная сессия, если не указано иное
