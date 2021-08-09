@@ -227,13 +227,13 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
 
-  /queue:
+  /queues:
 
     get:
-      summary: Возвращает список всех доступных очередей и их описание
+      summary: Возвращает список очередей и их описание
       tags:
         - Очереди
-        
+
       responses:
         '200':
           description: JSON-массив с очередями
@@ -246,7 +246,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   
-  /queue/{queueName}:
+  /queues/{queueName}/slots:
 
     get:
       summary: Возвращает слоты в выбранной очереди в указанный промежуток дат
@@ -285,7 +285,7 @@ paths:
       
       responses:
         '200':
-          description: JSON-массив со слотами
+          description: JSON-массив со слотами на дни с `day` по `day`+`offset`
           content:
             application/json:
               schema:
@@ -295,6 +295,42 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
     
+  /queues/{queueName}/slots/{slotId}:
+
+    get:
+      summary: Возвращает информацию о запрошенном слоте в очереди
+      tags:
+        - Очереди
+
+      parameters:
+        - name: queueName
+          in: path
+          required: true
+          allowEmptyValue: false
+          description: Имя очереди
+          schema:
+            type: string 
+            example: "living"
+        - name: slotId
+          in: path
+          required: true
+          allowEmptyValue: false
+          description: ID слота
+          schema:
+            type: integer
+
+      responses:
+        '200':
+          description: JSON-объект с информацией о слоте
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Slot'
+        '401':
+          $ref: '#/components/responses/UnathorizedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
     post:
       summary: Занять выбранный слот в выбранной очереди
       tags:
@@ -309,14 +345,13 @@ paths:
           schema:
             type: string 
             example: "living"
-      
-      requestBody:
-        required: true
-        description: JSON-объект, содержащий айди выбранного слота
-        content:
-          application/json:
-            schema:
-              type: integer
+        - name: slotId
+          in: path
+          required: true
+          allowEmptyValue: false
+          description: ID слота
+          schema:
+            type: integer
       
       responses:
         '200':
@@ -324,7 +359,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnathorizedError'
         '403':
-          description: Этот слот уже занят
+          description: Этот слот уже занят или Вы уже записались в эту очередь
           content:
             application/json:
               schema:
@@ -370,6 +405,8 @@ components:
       type: object
       properties:
         name:
+          type: string
+        title:
           type: string
         description:
           type: string
