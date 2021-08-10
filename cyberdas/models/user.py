@@ -92,3 +92,4 @@ class User(Base):
     faculty = relationship('Faculty', back_populates = 'population')
     session = relationship('Session', back_populates = 'user')
     long_session = relationship('LongSession', back_populates = 'user')
+    slots = relationship('Slot', back_populates = 'holder')
