@@ -23,8 +23,8 @@ def queueDB(defaultDB):
         name = 'music', title = 'Музкомната', duration = 5,
         description = 'Музкомната', waterfall = True, only_once = False
     )
-    base = datetime.now()
-    datetime_range = [base + timedelta(minutes = 5) for x in range(10)]
+    base = datetime.now() - timedelta(days = 1)
+    datetime_range = [base + timedelta(days = x) for x in range(10)]
     music_slots = [Slot(queue_name = 'music', id = x, time = datetime_range[x])
                    for x in range(10)]
 

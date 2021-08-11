@@ -1,6 +1,6 @@
 import pytest
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 import falcon
 
@@ -24,7 +24,7 @@ def queueDB(defaultDB):
         description = 'Музкомната', waterfall = True, only_once = False
     )
     base = datetime.now() - timedelta(days = 1)
-    datetime_range = [base + timedelta(days = 1) for x in range(10)]
+    datetime_range = [base + timedelta(days = x) for x in range(10)]
     music_slots = [Slot(queue_name = 'music', id = x, time = datetime_range[x])
                    for x in range(10)]
 
@@ -49,7 +49,7 @@ class TestCollection:
 
     def test_get_day(self, a_client, queueDB):
         'На GET-запрос с day в query возвращаются слоты на этот день'
-        resp = a_client.simulate_get(self.URI, params = {'day': datetime.now()})
+        resp = a_client.simulate_get(self.URI, params = {'day': date.today()})
         assert resp.status == falcon.HTTP_200
         assert len(json.loads(resp.text)) == 1
 
@@ -60,7 +60,7 @@ class TestCollection:
 
     def test_get_day_offset(self, a_client, queueDB):
         'На GET-запрос с offset и day в query возвращается слайс слотов'
-        resp = a_client.simulate_get(self.URI, params = {'day': datetime.now(),
+        resp = a_client.simulate_get(self.URI, params = {'day': date.today(),
                                                          'offset': 4})
         assert resp.status == falcon.HTTP_200
         assert len(json.loads(resp.text)) == 4
