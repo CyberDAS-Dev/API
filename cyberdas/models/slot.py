@@ -8,9 +8,10 @@ from sqlalchemy import (
 
 from sqlalchemy.orm import relationship
 from .__meta__ import Base
+from cyberdas.utils.serializable_table import Serializable
 
 
-class Slot(Base):
+class Slot(Base, Serializable):
     '''
         Объект БД, хранящий информацию о слоте в очереди.
 
