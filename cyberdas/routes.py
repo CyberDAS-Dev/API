@@ -8,7 +8,9 @@ from .resources import (
     Refresh,
     Verify,
     Resend,
-    Restore
+    Restore,
+    queues,
+    slots
 )
 from .services import (
     SignupMail,
@@ -37,3 +39,8 @@ def route(api):
     api.add_route('/verify', Verify(mail))
     api.add_route('/resend', Resend(mail))
     api.add_static_route('/', path.abspath('cyberdas/static/'))
+    api.add_route('/queues', queues.Collection())
+    api.add_route('/queues/{queueName}', queues.Item())
+    api.add_route('/queues/{queueName}/slots', slots.Collection())
+    api.add_route('/queues/{queueName}/slots/{slotId}', slots.Item())
+    api.add_route('/queues/{queueName}/slots/{slotId}/reserve', slots.Reserve())

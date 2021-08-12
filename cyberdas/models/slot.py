@@ -45,3 +45,8 @@ class Slot(Base, Serializable):
 
     holder = relationship('User', back_populates = 'slots')
     queue = relationship('Queue', back_populates = 'slots')
+
+    def as_dict(self):
+        return {'id': self.id,
+                'time': self.time.isoformat("T"),
+                'free': False if self.user_id is not None else True}
