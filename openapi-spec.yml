@@ -671,17 +671,18 @@ components:
                 type: string
               description:
                 type: string
-              startDate:
-                type: string
-                format: date
-              endDate:
-                type: string
-                format: date
+              duration:
+                type: integer
+              waterfall:
+                type: boolean
+              only_once:
+                type: boolean
             required:
               - title
               - description
-              - startDate
-              - endDate
+              - duration
+              - waterfall
+              - only_once
 
     SlotsPut:
       description: JSON-массив, содержащий datetime'ы для создания слотов
