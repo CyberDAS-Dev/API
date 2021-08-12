@@ -1,5 +1,6 @@
 import string
 import random
+from os import environ
 
 import falcon_sqla
 import pytest
@@ -11,7 +12,7 @@ from cyberdas.config import get_cfg
 
 @pytest.fixture(scope = "class")
 def mockDB():
-    yield MockDB()
+    yield MockDB(cleanup = environ.get('DB_CLEANUP', True))
 
 
 class MockDB(object):

@@ -320,7 +320,7 @@ paths:
       parameters:
         - name: day
           in: query
-          required: true
+          required: false
           allowEmptyValue: false
           description: Первый день для составления интервала дат
           schema:
@@ -329,7 +329,7 @@ paths:
             example: "2021-01-30"
         - name: offset
           in: query
-          required: true
+          required: false
           allowEmptyValue: false
           description: Длина интервала дат 
           schema:
@@ -338,10 +338,17 @@ paths:
             minimum: 1
             maximum: 90
             example: 4
+        - name: my
+          in: query
+          required: false
+          allowEmptyValue: true
+          description: Возвращать слоты только запросившего пользователя
+          schema:
+            type: boolean
       
       responses:
         '200':
-          description: JSON-массив со слотами на дни с `day` по `day`+`offset`
+          description: JSON-массив со слотами на дни с `day` по `day`+`offset`-1
           content:
             application/json:
               schema:
@@ -433,7 +440,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
 
-  /queues/{queueName}/slots/{slotId}/reservation:
+  /queues/{queueName}/slots/{slotId}/reserve:
 
     parameters:
       - $ref: '#/components/parameters/queueName'
@@ -445,12 +452,12 @@ paths:
         - Очереди
       
       responses:
-        '200':
+        '201':
           description: Успешная запись
         '401':
           $ref: '#/components/responses/UnauthenticatedError'
         '403':
-          description: Этот слот уже занят или Вы уже записались в эту очередь
+          description: Этот слот уже занят\истёк или Вы уже записались в эту очередь
           content:
             application/json:
               schema:
@@ -519,18 +526,22 @@ components:
           type: string
         description:
           type: string
-        startDate:
-          type: string
-          format: date
-        endDate:
-          type: string
-          format: date
+        duration:
+          description: Продолжительность слотов этой очереди, в минутах
+          type: integer
+        waterfall:
+          description: Нужно ли представлять очередь в виде непрерывной последовательности слотов
+          type: boolean
+        only_once:
+          description: Можно ли занять место в очереди только один раз
+          type: boolean
       required:
         - name
         - title
         - description
-        - startDate
-        - endDate
+        - duration
+        - waterfall
+        - only_once
 
     Queues:
       type: array
@@ -542,9 +553,7 @@ components:
       properties:
         id:
           type: integer
-        queueName:
-          type: string
-        datetime:
+        time:
           type: string
           format: date-time
         free:
@@ -669,17 +678,18 @@ components:
                 type: string
               description:
                 type: string
-              startDate:
-                type: string
-                format: date
-              endDate:
-                type: string
-                format: date
+              duration:
+                type: integer
+              waterfall:
+                type: boolean
+              only_once:
+                type: boolean
             required:
               - title
               - description
-              - startDate
-              - endDate
+              - duration
+              - waterfall
+              - only_once
 
     SlotsPut:
       description: JSON-массив, содержащий datetime'ы для создания слотов

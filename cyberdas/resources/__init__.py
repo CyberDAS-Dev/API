@@ -7,5 +7,6 @@ from .resend import Resend
 from .restore import Restore
 
 __all__ = [
-    'Signup', 'Login', 'Logout', 'Refresh', 'Verify', 'Resend', 'Restore'
+    'Signup', 'Login', 'Logout', 'Refresh', 'Verify', 'Resend', 'Restore',
+    'queues', 'slots'
 ]
