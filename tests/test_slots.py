@@ -82,6 +82,25 @@ class TestCollection:
         resp2 = a_client.simulate_get(self.URI.replace('/slots', '/slots/0'))
         assert json.loads(resp1.text)[0] == json.loads(resp2.text)
 
+    def test_get_my(self, a_client, queueDB):
+        'На запрос с my в query возвращаются только слоты этого пользователя'
+        with queueDB.session as dbses:
+            slots = dbses.query(Slot).filter_by(queue_name = 'music').all()
+            slots[0].user_id = 1
+            slots[5].user_id = 1
+
+        resp = a_client.simulate_get(self.URI, params = {'my': 1})
+        assert resp.status == falcon.HTTP_200
+        content = json.loads(resp.text)
+        assert len(content) == 2
+        assert content[0]['id'] == 0
+        assert content[1]['id'] == 5
+
+        with queueDB.session as dbses:
+            slots = dbses.query(Slot).filter_by(queue_name = 'music').all()
+            slots[0].user_id = None
+            slots[5].user_id = None
+
 
 class TestItem:
 

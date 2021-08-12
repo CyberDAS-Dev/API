@@ -338,6 +338,13 @@ paths:
             minimum: 1
             maximum: 90
             example: 4
+        - name: my
+          in: query
+          required: false
+          allowEmptyValue: true
+          description: Возвращать слоты только запросившего пользователя
+          schema:
+            type: boolean
       
       responses:
         '200':
