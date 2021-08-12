@@ -17,7 +17,8 @@ def queueDB(defaultDB):
         description = 'Заселение 2021', waterfall = False, only_once = True
     )
     living_slots = [Slot(queue_name = 'living2021', id = x,
-                    time = datetime.now()) for x in range(10)]
+                    time = (datetime.now() + timedelta(minutes = x)))
+                    for x in range(10)]
 
     music = Queue(
         name = 'music', title = 'Музкомната', duration = 5,
@@ -77,7 +78,7 @@ class TestItem:
 
     def test_get_404(self, a_client, queueDB):
         'В случае отсутствия запрашиваемого слота возвращается 404 Not Found'
-        resp = a_client.simulate_get(self.URI.replace('2', '40'))
+        resp = a_client.simulate_get(self.URI.replace('/2', '/40'))
         assert resp.status == falcon.HTTP_404
 
     def test_get(self, a_client, queueDB):
@@ -121,7 +122,7 @@ class TestReserve:
 
     def test_post_old(self, a_client):
         'При попытке забронировать истёкший слот возвращается 403 Forbidden'
-        resp = a_client.simulate_post(self.URI.replace('2', '0'))
+        resp = a_client.simulate_post(self.URI.replace('/2/', '/0/'))
         assert resp.status == falcon.HTTP_403
 
     def test_delete(self, a_client, queueDB):
@@ -137,7 +138,7 @@ class TestReserve:
         with queueDB.session as dbses:
             slot = dbses.query(Slot).filter_by(queue_name = 'music', id = 0).first() # noqa
             slot.user_id = 1
-        resp = a_client.simulate_delete(self.URI.replace('2', '0'))
+        resp = a_client.simulate_delete(self.URI.replace('/2/', '/0/'))
         assert resp.status == falcon.HTTP_403
 
     def test_only_once(self, a_client, queueDB):
@@ -145,10 +146,10 @@ class TestReserve:
         URI = self.URI.replace('music', 'living2021')
         resp = a_client.simulate_post(URI)
         assert resp.status == falcon.HTTP_201
-        resp = a_client.simulate_post(URI.replace('2', '3'))
+        resp = a_client.simulate_post(URI.replace('/2/', '/3/'))
         assert resp.status == falcon.HTTP_403
 
         # Перебронирование
         a_client.simulate_delete(URI)
-        resp = a_client.simulate_post(URI.replace('2', '3'))
+        resp = a_client.simulate_post(URI.replace('/2/', '/3/'))
         assert resp.status == falcon.HTTP_201
