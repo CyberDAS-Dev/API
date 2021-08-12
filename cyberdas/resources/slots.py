@@ -23,12 +23,16 @@ class Collection:
 
             offset (optional, in: query) - длина интервала дат за которые
                 необходимо предоставить информацию о слотах, в днях
+
+            my (optional, in: query) - возвращать только слоты пользователя,
+                сделавшего запрос
         '''
         dbses = req.context.session
 
         # Получаем параметры и проверяем ввод от пользователя
         day = req.get_param('day')
         offset = req.get_param('offset')
+        my = req.get_param_as_bool('my')
         if day is None and offset is not None:
             raise falcon.HTTPBadRequest(description = 'Отсутствует параметр day') # noqa
 
@@ -48,6 +52,10 @@ class Collection:
             start = date.fromisoformat(day)
             end = start + timedelta(days = (int(offset) - 1))
             slots = slots.filter(cast(Slot.time, Date).between(start, end))
+
+        # Если есть флаг `my`, оставляем только слоты пользователя
+        if my:
+            slots = slots.filter_by(user_id = req.context.user['uid'])
 
         resp.media = [slot.as_dict() for slot in slots.all()]
         resp.status = falcon.HTTP_200
