@@ -12,20 +12,22 @@
                 "description": {
                     "type": "string"
                 },
-                "startDate": {
-                    "type": "string",
-                    "format": "date"
+                "duration": {
+                    "type": "integer"
                 },
-                "endDate": {
-                    "type": "string",
-                    "format": "date"
+                "waterfall": {
+                    "type": "boolean"
+                },
+                "only_once": {
+                    "type": "boolean"
                 }
             },
             "required": [
                 "title",
                 "description",
-                "startDate",
-                "endDate"
+                "duration",
+                "waterfall",
+                "only_once"
             ],
             "title": "QueuePutRequest"
         }
