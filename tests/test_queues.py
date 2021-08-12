@@ -36,23 +36,22 @@ class TestCollection:
 
     URI = '/queues'
 
-    def test_get(self, a_client):
-        'На GET-запрос возвращается 200 OK'
+    def test_get(self, a_client, queueDB):
+        'На GET-запрос возвращается 200 OK со всеми очередями'
         resp = a_client.simulate_get(self.URI)
         assert resp.status == falcon.HTTP_200
+        assert len(json.loads(resp.text)) == 2
 
     def test_post(self, a_client):
         'POST-запрос не поддерживается коллекцией'
         resp = a_client.simulate_post(self.URI)
         assert resp.status == falcon.HTTP_405
 
-    @pytest.fixture(scope = 'class')
-    def valid_get(self, a_client, queueDB):
-        resp = a_client.simulate_get(self.URI)
-        yield json.loads(resp.text)
-
-    def test_get_content(self, valid_get):
-        assert len(valid_get) == 2
+    def test_get_content(self, a_client, queueDB):
+        'Содержимое в коллекции совпадает с содержимым по индивидуальному запросу' # noqa
+        resp1 = a_client.simulate_get(self.URI)
+        resp2 = a_client.simulate_get(self.URI.replace('/queues', '/queues/living2021')) # noqa
+        assert json.loads(resp1.text)[0] == json.loads(resp2.text)
 
 
 class TestItem:

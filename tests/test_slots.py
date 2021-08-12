@@ -66,6 +66,22 @@ class TestCollection:
         assert resp.status == falcon.HTTP_200
         assert len(json.loads(resp.text)) == 4
 
+    @pytest.mark.parametrize("offset", [0, 1, 2, 89, 90, 91])
+    def test_get_day_offset_limits(self, a_client, queueDB, offset):
+        'Параметр offset должен принимать значения от 1 до 90'
+        resp = a_client.simulate_get(self.URI, params = {'day': date.today(),
+                                                         'offset': offset})
+        if offset <= 90 and offset >= 1:
+            assert resp.status == falcon.HTTP_200
+        else:
+            assert resp.status == falcon.HTTP_400
+
+    def test_get_content(self, a_client, queueDB):
+        'Содержимое в коллекции совпадает с содержимым по индивидуальному запросу' # noqa
+        resp1 = a_client.simulate_get(self.URI)
+        resp2 = a_client.simulate_get(self.URI.replace('/slots', '/slots/0'))
+        assert json.loads(resp1.text)[0] == json.loads(resp2.text)
+
 
 class TestItem:
 
@@ -102,6 +118,11 @@ class TestReserve:
 
     URI = '/queues/music/slots/2/reserve'
 
+    def test_post_404(self, a_client, queueDB):
+        'В случае отсутствия запрашиваемого слота возвращается 404 Not Found'
+        resp = a_client.simulate_post(self.URI.replace('/2/', '/40/'))
+        assert resp.status == falcon.HTTP_404
+
     def test_post(self, a_client, queueDB):
         'POST на свободный слот должен резервировать его под пользователя'
         resp = a_client.simulate_post(self.URI)
@@ -125,6 +146,11 @@ class TestReserve:
         resp = a_client.simulate_post(self.URI.replace('/2/', '/0/'))
         assert resp.status == falcon.HTTP_403
 
+    def test_delete_404(self, a_client, queueDB):
+        'В случае отсутствия запрашиваемого слота возвращается 404 Not Found'
+        resp = a_client.simulate_delete(self.URI.replace('/2/', '/40/'))
+        assert resp.status == falcon.HTTP_404
+
     def test_delete(self, a_client, queueDB):
         'DELETE от пользователя на его слот должен убирать бронирование слота'
         resp = a_client.simulate_delete(self.URI)
@@ -132,6 +158,19 @@ class TestReserve:
         with queueDB.session as dbses:
             slot = dbses.query(Slot).filter_by(queue_name = 'music', id = 2).first() # noqa
             assert slot.user_id is None
+
+    def test_delete_free(self, a_client, queueDB):
+        'При попытке разбронировать свободный слот возвращается 404 Not Found'
+        resp = a_client.simulate_delete(self.URI)
+        assert resp.status == falcon.HTTP_404
+
+    def test_delete_not_yours(self, a_client, queueDB):
+        'При попытке разбронировать чужой слот возвращается 403 Forbidden'
+        with queueDB.session as dbses:
+            slot = dbses.query(Slot).filter_by(queue_name = 'music', id = 2).first() # noqa
+            slot.user_id = 2
+        resp = a_client.simulate_delete(self.URI)
+        assert resp.status == falcon.HTTP_403
 
     def test_delete_old(self, a_client, queueDB):
         'Невозможно убрать своё бронирование уже прошедшего слота'
