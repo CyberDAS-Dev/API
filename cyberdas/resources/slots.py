@@ -32,6 +32,9 @@ class Collection:
         if day is None and offset is not None:
             raise falcon.HTTPBadRequest(description = 'Отсутствует параметр day') # noqa
 
+        if offset is not None and (int(offset) < 1 or int(offset) > 90):
+            raise falcon.HTTPBadRequest(description = 'Offset принимает значения от 1 до 90') # noqa
+
         # Базовый запрос - если нет параметров, то вернутся все слоты из очереди
         slots = dbses.query(Slot).filter_by(queue_name = queueName)
 
@@ -147,7 +150,14 @@ class Reserve:
             resp.status = falcon.HTTP_404
             return
 
-        # Пользователь не может разбронивать чужой слот
+        # Проверяем, вдруг слот свободен
+        if slot.user_id is None:
+            log.debug("[СВОБОДНЫЙ СЛОТ] uid %s, queueName %s, slotId %s"
+                      % (user['uid'], queueName, slotId))
+            resp.status = falcon.HTTP_404
+            return
+
+        # Пользователь не может разбронировать чужой слот
         if slot.user_id != user['uid']:
             log.debug("[ЗАНЯТЫЙ СЛОТ] uid %s, queueName %s, slotId %s"
                       % (user['uid'], queueName, slotId))
