@@ -34,8 +34,8 @@ class Mail(object):
 
             subject(str, необходимо): тема письма
 
-            content(list, необходимо): список из содержимого письма. Может
-                включать в себя текст, HTML или изображения.
+            content(dict, необходимо): словарь, содержащий текстовую и HTML
+                версию письма, при этом они могут являться списками из контента.
 
             log(необходимо): логгер, позволяющий выводить сообщения об ошибках.
         '''
@@ -43,8 +43,10 @@ class Mail(object):
         msg['Subject'] = subject
         msg['From'] = self.sent_from
         msg['To'] = to
-        data = MIMEText(content, 'html')  # мы отправляем только HTML
-        msg.attach(data)
+        plain = MIMEText(content['plain'], 'plain')
+        html = MIMEText(content['html'], 'html')
+        msg.attach(plain)
+        msg.attach(html)
         try:
             context = ssl.SSLContext(ssl.PROTOCOL_TLS)
             server = smtplib.SMTP(self.smtp_server, self.smtp_port)
@@ -117,13 +119,14 @@ class SignupMail(Mail):
         '''
         mail_token = self.generate_token(email, req.get_param('next'))
         verify_url = f'{req.forwarded_prefix}/verify?token={mail_token}'
-        template = self.load_template('verify_email')
-        rendered_template = template.render(verify_url = verify_url)
+
+        html_template = self.load_template('verify_email').render(verify_url = verify_url) # noqa
+        plain_template = self.load_template('verify_email_plain').render(verify_url = verify_url) # noqa
 
         self.send(
             to = email,
             subject = 'Подтверждение e-mail адреса в CyberDAS',
-            content = rendered_template,
+            content = {'html': html_template, 'plain': plain_template},
             log = req.context.logger
         )
         return verify_url

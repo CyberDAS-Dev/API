@@ -56,7 +56,7 @@ class TestMail:
 
     to = 'user@das.net'
     subject = 'hello'
-    content = 'not much'
+    content = {'html': 'not much', 'plain': 'not much'}
 
     @pytest.fixture(scope = 'class')
     def mail(self, mock_smtp_cfg):
