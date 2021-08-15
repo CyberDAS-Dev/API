@@ -3,14 +3,12 @@ import secrets
 from datetime import datetime
 from os import environ
 
-from cyberdas.models import Session, Faculty, LongSession
+from cyberdas.models import Session, Faculty
 from cyberdas.config import get_cfg
 
 
 USER_EMAIL = 'user@cyberdas.net'
-USER_PASS = 'some!stRong12'
-REGISTERED_USER_EMAIL = 'second_user@das.net'
-REGISTERED_USER_PASS = 'th!s1is_strong_too'
+REGISTERED_USER_EMAIL = 'second_user@cyberdas.net'
 FACULTY_NAME = 'факультет'
 SES_LENGTH = int(get_cfg()['internal']['session.length'])
 
@@ -22,7 +20,7 @@ def oneUserDB(mockDB):
     '''
     db = mockDB
     faculty = Faculty(id = 1, name = FACULTY_NAME)
-    users = db.generate_users(1, [REGISTERED_USER_EMAIL], [REGISTERED_USER_PASS]) # noqa
+    users = db.generate_users(1, [REGISTERED_USER_EMAIL]) # noqa
     users[0].faculty = faculty
     db.setup_models(users)
     yield db
@@ -54,46 +52,3 @@ def logout(oneUserDB):
 def session(oneUserDB, authorize):
     yield authorize
     logout(oneUserDB)
-
-
-@pytest.fixture(scope = 'class')
-def long_authorize(oneUserDB, authorize):
-    sid = authorize['SESSIONID']
-
-    selector = secrets.token_urlsafe(12)
-    validator = secrets.token_urlsafe(32)
-    l_session = LongSession(uid = environ['AUTH_UID'], validator = validator,
-                            selector = selector, associated_sid = sid,
-                            expires = datetime(datetime.now().year + 1, 12, 31),
-                            user_agent = 'curl', ip = '127.0.0.1')
-    oneUserDB.setup_models(l_session)
-    cookie = {"REMEMBER": f"{selector}:{validator}"}
-    cookie.update(authorize)
-    yield cookie
-
-
-@pytest.fixture(scope = 'class')
-def long_only_authorize(oneUserDB, long_authorize):
-    cookie = long_authorize
-    logout(oneUserDB)
-    yield cookie
-
-
-def long_logout(oneUserDB):
-    logout(oneUserDB)
-    with oneUserDB.session as dbses:
-        long_session = dbses.query(LongSession).filter_by(uid = environ['AUTH_UID']).all() # noqa
-        for ses in long_session:
-            dbses.delete(ses)
-
-
-@pytest.fixture(scope = 'class')
-def long_session(oneUserDB, long_authorize):
-    yield long_authorize
-    long_logout(oneUserDB)
-
-
-@pytest.fixture(scope = 'class')
-def long_only_session(oneUserDB, long_only_authorize):
-    yield long_only_authorize
-    long_logout(oneUserDB)

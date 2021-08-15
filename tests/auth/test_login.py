@@ -7,7 +7,7 @@ from conftest import (
     REGISTERED_USER_PASS,
     SES_LENGTH,
 )
-from cyberdas.models import Session, LongSession
+from cyberdas.models import Session
 
 
 class TestLogin:
@@ -83,21 +83,3 @@ class TestLogin:
         with oneUserDB.session as dbses:
             sessions = dbses.query(Session).filter_by(uid = 1).all()
             assert len(sessions) == 2
-
-
-class TestLoginRememberMe:
-
-    URI = TestLogin.URI
-
-    def test_post(self, client, oneUserDB):
-        'Проверка того, что возвращается токен и в БД создается длинная сессия'
-        resp = client.simulate_post(self.URI,
-                                    json = {'email': REGISTERED_USER_EMAIL,
-                                            'password': REGISTERED_USER_PASS},
-                                    query_string = 'remember'
-                                    )
-        assert resp.status == falcon.HTTP_200
-        assert len(resp.cookies) == 2
-        with oneUserDB.session as dbses:
-            long_session = dbses.query(LongSession).filter_by(uid = 1).first()
-            assert long_session is not None
