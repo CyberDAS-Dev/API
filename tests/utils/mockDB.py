@@ -52,14 +52,13 @@ class MockDB(object):
         second = self._random_string(6)
         return first + "@" + second + '.com'
 
-    def generate_users(self, n, emails = [], passwords = []):
+    def generate_users(self, n, emails = []):
         lst = []
         for x in range(1, n + 1):
             user = User(
                 email = emails[x - 1] if len(emails) >= x else self._random_email(), # noqa
-                password = passwords[x - 1] if len(passwords) >= x else self._random_string(), # noqa
                 name = self._random_string(), surname = self._random_string(),
-                email_verified = False, verified = False
+                verified = False
             )
             lst.append(user)
         return lst
