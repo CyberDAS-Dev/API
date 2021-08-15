@@ -2,7 +2,7 @@ openapi: '3.0.2'
 
 info:
   title: CyberDAS API
-  version: '0.4'
+  version: '0.5'
   contact:
     email: api@cyberdas.net
 
@@ -17,59 +17,147 @@ tags:
 
 paths:
 
-  /signup:
+  /account:
 
-    post:
-      summary: Позволяет зарегистрировать новый аккаунт
+    get:
+      summary: Возвращает информацию о текущем пользователе
       tags:
         - Аутентификация
-      security: []   # доступно без аутентификации
-
-      requestBody:
-        required: true
-        description: JSON-объект, содержащий данные для регистрации (почту, ФИО, ...)
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SignupRequest'
       
       responses:
         '200':
-          description: Письмо отправлено. Для подтверждения регистрации нужно перейти по ссылке из письма.
+          description: Информация о пользователе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /account/signup:
+
+    post:
+      summary: Отправляет ссылку для создания аккаунта на почту
+      tags:
+        - Аутентификация
+      security: []  # доступно без аутентификации
+
+      parameters:
+        - name: next
+          in: query
+          required: false
+          allowEmptyValue: false
+          description: Ресурс, на который нужно перенаправить пользователя после успешной регистрации
+          schema:
+            type: string
+
+      requestBody:
+        $ref: '#/components/requestBodies/Signup'
+      
+      responses:
+        '200':
+          description: Письмо отправлено. Для завершения регистрации нужно перейти по ссылке из письма
         '403':
-          description: Пользователь с такой почтой уже зарегистрирован.
+          description: Пользователь с такой почтой уже зарегистрирован
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
           $ref: '#/components/responses/UnexpectedError'
-  
-  /login:
+
+  /account/signup/validate:
+    
+    get:
+      summary: Завершает регистрацию после перехода по ссылке из регистрационного письма
+      tags:
+        - Аутентификация
+      security: []  # доступно без аутентификации
+
+      parameters:
+        - name: token
+          in: query
+          required: true
+          allowEmptyValue: false
+          description: Токен из письма с данными для регистрации
+          schema:
+            type: string
+            format: byte
+
+      responses:
+        '303':
+          description: Аккаунт создан
+          headers: 
+            Location:
+              schema: 
+                type: string
+                example: api.cyberdas.net/v1/account/login
+        '403':
+          description: Неверный токен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /account/login:
 
     post:
-      summary: Начинает сессию и возвращает аутентификационный куки
+      summary: Отправляет ссылку для начала новой сессии на почту
       tags:
         - Аутентификация
       security: []   # доступно без аутентификации
 
-      requestBody:
-        required: true
-        description: JSON-объект, содержащий логин и пароль.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginRequest'
-
       parameters:
-        - name: remember
+        - name: next
           in: query
-          schema: 
-            type: boolean
+          required: false
+          allowEmptyValue: false
+          description: Ресурс, на который нужно перенаправить пользователя после успешного логина
+          schema:
+            type: string
+        - name: short_session
+          in: query
           required: false
           allowEmptyValue: true
-          description: Если присутствует в query, то помимо короткой сессии создается и долгая двухнедельная.
+          description: Если присутствует в query, то сессия завершится при выходе из браузера
+          schema: 
+            type: boolean
+
+      requestBody:
+        $ref: '#/components/requestBodies/Login'
       
+      responses:
+        '401':
+          description: Неверный адрес почты
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /account/login/validate:
+    
+    get:
+      summary: Возвращает сессионный куки после перехода по ссылке из письма
+      tags:
+        - Аутентификация
+      security: []  # доступно без аутентификации
+
+      parameters:
+        - name: token
+          in: query
+          required: true
+          allowEmptyValue: false
+          description: Токен из письма с данными для логина
+          schema:
+            type: string
+            format: byte
+
       responses:
         '200':
           description: >
@@ -84,52 +172,10 @@ paths:
               schema:
                 type: string
                 example: WfF1szMUHhiokx9AHFply5L2xAOfjRkE
-        '401':
-          description: Неверно введен адрес почты или пароль
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        default:
-          $ref: '#/components/responses/UnexpectedError'
-
-  /refresh:
-
-    get:
-      summary: Продлевает сессию пользователя
-      tags:
-        - Аутентификация
-      security: []   # доступно без аутентификации
-
-      responses:
-        '200':
-          description: Сессия успешно продлена.
-          headers: 
-            Set-Cookie:
-              schema: 
-                type: string
-                example: SESSIONID=abcde12345; Path=/; HttpOnly
-        default:
-          $ref: '#/components/responses/UnexpectedError'
-
-  /restore:
-
-    get:
-      summary: Позволяет аутентифицироваться по токену `Remember me` без пароля
-      tags:
-        - Аутентификация
-      security: []   # доступно без аутентификации
-
-      parameters:
-        - in: cookie 
-          name: REMEMBER
-          schema:
-            type: string
-          required: true
-
-      responses:
-        '200':
-          description: Сессия и новый токен успешно созданы
+        '303':
+          description: >
+            Успешная авторизация.
+            Идентификатор сессии возвращается в 'SESSIONID'-куки. Этот куки должен использоваться для дальнейших запросов.
           headers: 
             Set-Cookie:
               schema: 
@@ -139,30 +185,12 @@ paths:
               schema:
                 type: string
                 example: WfF1szMUHhiokx9AHFply5L2xAOfjRkE
-        default:
-          $ref: '#/components/responses/UnexpectedError'
-
-  /resend:
-
-    post:
-      summary: Заново отправляет верификационное письмо на почту
-      tags:
-        - Аутентификация
-      security: []   # доступно без аутентификации
-
-      requestBody:
-        required: true
-        description: JSON-объект, содержащий адрес почты.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ResendRequest'
-
-      responses:
-        '200':
-          description: Если такой пользователь зарегистрирован, то письмо отправлено.
+            Location:
+              schema: 
+                type: string
+                example: cyberdas.net
         '403':
-          description: Этот пользователь уже верифицирован.
+          description: Неверный токен
           content:
             application/json:
               schema:
@@ -170,30 +198,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
 
-  /verify:
-
-    get:
-      summary: Подтверждает адрес почты пользователя
-      tags:
-        - Аутентификация
-      security: []   # доступно без аутентификации
-
-      responses:
-        '200':
-          description: Адрес успешно подтвержден.
-        '303':
-          description: Адрес успешно подтвержден.  
-          headers: 
-            Location:
-              schema: 
-                type: string
-                example: cyberdas.net/verify
-        '401':
-          $ref: '#/components/responses/UnauthenticatedError'
-        default:
-          $ref: '#/components/responses/UnexpectedError'
-
-  /logout:
+  /account/logout:
 
     get:
       summary: Заканчивает сессию пользователя
@@ -203,25 +208,6 @@ paths:
       responses:
         '200':
           description: Сессия успешно завершена.
-        '401':
-          $ref: '#/components/responses/UnauthenticatedError'
-        default:
-          $ref: '#/components/responses/UnexpectedError'
-
-  /me:
-
-    get:
-      summary: Возвращает информацию о пользователе
-      tags:
-        - Аутентификация
-      
-      responses:
-        '200':
-          description: Информация о пользователе
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
         '401':
           $ref: '#/components/responses/UnauthenticatedError'
         default:
@@ -578,48 +564,6 @@ components:
         message:
           type: string
 
-    LoginRequest:
-      type: object
-      properties:
-        email:
-          type: string
-        password:
-          type: string
-          format: password
-      required:
-        - email
-        - password
-
-    SignupRequest:
-      type: object
-      properties:
-        email:
-          type: string
-        password:
-          type: string
-        name:
-          type: string
-        surname:
-          type: string
-        patronymic:
-          type: string
-        faculty:
-          type: string
-      required:
-        - email
-        - password
-        - name
-        - surname
-        - faculty
-
-    ResendRequest:
-      type: object
-      properties:
-        email:
-          type: string
-      required:
-        - email
-
 
   responses:
 
@@ -665,6 +609,43 @@ components:
 
 
   requestBodies:
+
+    Signup:
+      description: JSON-объект, содержащий данные для регистрации нового аккаунта (почту, ФИО, ...)
+      required: true
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              name:
+                type: string
+              surname:
+                type: string
+              patronymic:
+                type: string
+              faculty:
+                type: string
+            required:
+              - email
+              - name
+              - surname
+              - faculty
+
+    Login:
+      description: JSON-объект, содержащий адрес почты для логина
+      required: true
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+            required:
+              - email
     
     QueuePut:
       description: JSON-объект, содержащий информацию для создания очереди
