@@ -18,7 +18,7 @@ def defaultDB(mockDB):
     '''
     db = mockDB
     faculty = Faculty(id = 1, name = 'faculty')
-    users = db.generate_users(2, ['user@mail.com'], ['password'])
+    users = db.generate_users(2, ['user@mail.com'])
     users[0].faculty = faculty
     users[1].faculty = faculty
     db.setup_models(users)
