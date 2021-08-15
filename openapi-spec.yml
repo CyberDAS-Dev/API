@@ -131,6 +131,8 @@ paths:
         $ref: '#/components/requestBodies/Login'
       
       responses:
+        '200':
+          description: Письмо отправлено. Для логина нужно перейти по ссылке из письма
         '401':
           description: Неверный адрес почты
           content:
