@@ -2,7 +2,7 @@ from os import environ
 
 import falcon
 
-from cyberdas.models import Session, LongSession
+from cyberdas.models import Session
 
 environ['AUTH_UID'] = '1'
 
@@ -43,19 +43,3 @@ class TestLogout:
             session = dbses.query(Session).filter_by(uid = 1).first()
             assert session is None
 
-
-class TestLogoutAssociated:
-
-    URI = TestLogout.URI
-
-    def test_associated(self, oneUserDB, client, long_authorize):
-        'Проверка того, что ассоциированая долгая сессия тоже удаляется'
-        resp = client.simulate_get(self.URI, cookies = long_authorize)
-        assert resp.status == falcon.HTTP_200
-        assert len(resp.cookies) == 2
-        assert 'REMEMBER' in resp.cookies and 'SESSIONID' in resp.cookies
-        with oneUserDB.session as dbses:
-            long_session = dbses.query(LongSession).filter_by(uid = 1).first()
-            assert long_session is None
-            session = dbses.query(Session).filter_by(uid = 1).first()
-            assert session is None
