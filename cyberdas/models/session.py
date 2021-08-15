@@ -60,4 +60,4 @@ class Session(Base):
         server_default = func.now()
     )
 
-    user = relationship('User', back_populates = 'session')
+    user = relationship('User', back_populates = 'sessions')
