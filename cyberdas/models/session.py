@@ -4,8 +4,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
-    DateTime,
-    Boolean
+    DateTime
 )
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -19,7 +18,7 @@ class Session(Base):
         Объект БД, хранящий информацию о текущих сессиях.
 
         Поля:
-            sid - Primary key String
+            sid - Primary key HashType
                 Уникальный идентификатор сессии, передающийся клиенту. Хранится
                 в виде хэша, - в случае если база данных окажется в руках
                 злоумышленников, они не смогут 'угнать' ни одну сессию.
@@ -44,17 +43,9 @@ class Session(Base):
                 Хранит дату последней выдачи куки
                 При выдаче куки устанавливается БД с помощью SQL now()
 
-            unsafe - Boolean
-                Флаг, ограничивающий некоторые действия пользователя, так как
-                его сессия была начата без ввода пароля, с помощью токена
-
         Взаимоотношения:
             user - многие-к-одному
                 Задает соответствие между пользователем и всеми его сессиями
-
-            associated - один-к-одному
-                Задает соответствие между этой сессией, и долгой сессией,
-                в рамках которой была создана эта.
     '''
 
     __tablename__ = 'sessions'
@@ -68,7 +59,5 @@ class Session(Base):
         DateTime(timezone = True), nullable = False,
         server_default = func.now()
     )
-    unsafe = Column(Boolean, nullable = False)
 
     user = relationship('User', back_populates = 'session')
-    associated = relationship('LongSession', back_populates = 'associated')
