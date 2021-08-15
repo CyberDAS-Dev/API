@@ -7,14 +7,12 @@ from .resources import (
 )
 from .services import (
     SignupMail,
-    PassChecker,
     SessionManager
 )
 
 # Инициализация компонентов
 cfg = get_cfg()
 mail = SignupMail(cfg)
-pass_checker = PassChecker()
 session_manager = SessionManager()
 ###
 
