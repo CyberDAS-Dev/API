@@ -14,7 +14,7 @@ pytest_plugins = ['utils.mockDB']
 @pytest.fixture(scope = 'class')
 def defaultDB(mockDB):
     '''
-    База данных, содержащая одного уже зарегистрированного пользователя
+    База данных, содержащая двух зарегистрированных пользователя
     '''
     db = mockDB
     faculty = Faculty(id = 1, name = 'faculty')
@@ -23,6 +23,12 @@ def defaultDB(mockDB):
     users[1].faculty = faculty
     db.setup_models(users)
     yield db
+
+
+@pytest.fixture(scope = 'class')
+def dbses(defaultDB):
+    with defaultDB.session as dbses:
+        yield dbses
 
 
 @pytest.fixture(scope = 'class')
@@ -37,8 +43,7 @@ def auth(defaultDB):
     session = Session(uid = environ.get('AUTH_UID', 1), sid = sid,
                       csrf_token = csrf_token,
                       user_agent = 'curl', ip = '127.0.0.1',
-                      expires = datetime(datetime.now().year + 1, 12, 31),
-                      unsafe = False)
+                      expires = datetime(datetime.now().year + 1, 12, 31))
     defaultDB.setup_models(session)
     environ['SESSIONID'] = sid
     environ['XCSRF-Token'] = csrf_token
