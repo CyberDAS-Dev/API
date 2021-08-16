@@ -1,11 +1,6 @@
 from datetime import datetime, timedelta
 
-import cyberdas.models.session
-import cyberdas.models.long_session
-from cyberdas.config import get_cfg
-from cyberdas.exceptions import NoSessionError, SecurityError
-
-cfg = get_cfg()
+from cyberdas.exceptions import NoSessionError
 
 
 class AbstractSession:
@@ -73,6 +68,7 @@ class AbstractSession:
         '''
         Создает новый объект сессий, автоматически устанавливая время действия
         и передавая любые параметры, использующиеся при инициализации объекта.
+        Возвращает дату-время истечения сессии.
 
         Аргументы:
             db(необходимо): активная сессия БД
@@ -81,17 +77,20 @@ class AbstractSession:
                 инициализации объекта, например при {'id': 2, 'name': 'Иван'}
                 объект будет инициализирован с полями `id = 2` и `name = 'Иван'`
         '''
+        expires = datetime.now() + timedelta(seconds = cls.length)
         new_object = cls.classname(
-            expires = datetime.now() + timedelta(seconds = cls.length),
+            expires = expires,
             **kwargs
         )
         db.add(new_object)
+        return expires
 
     @classmethod
     def prolong(cls, db, **ids):
         '''
         Продлевает время жизни объекта на еще одну полную длительность действия
         этого типа сессий.
+        Возвращает дату-время нового истечения сессии.
 
         Аргументы:
             db(необходимо): активная сессия БД
@@ -100,10 +99,11 @@ class AbstractSession:
                 однозначной идентификации объекта в БД, например {'id': 2}
         '''
         session = cls.find(db, **ids)
-        if session is None:
+        if session.first() is None:
             raise NoSessionError
-        session.update({cls.classname.expires: datetime.now() + timedelta(seconds = cls.length)}) # noqa
-        return cls.length
+        expires = datetime.now() + timedelta(seconds = cls.length)
+        session.update({cls.classname.expires: expires})
+        return expires
 
     @classmethod
     def terminate(cls, db, **ids):
@@ -118,45 +118,3 @@ class AbstractSession:
         '''
         session = cls.get(db, **ids)
         db.delete(session)
-
-
-class Session(AbstractSession):
-
-    classname = cyberdas.models.session.Session
-    length = int(cfg['internal']['session.length'])
-
-    @classmethod
-    def filter(cls, **ids):
-        return {'sid': ids['sid']}
-
-
-class LongSession(AbstractSession):
-
-    classname = cyberdas.models.long_session.LongSession
-    length = int(cfg['internal']['remember.length']) * 3600
-
-    @classmethod
-    def filter(cls, **ids):
-        if 'validator' in ids:
-            return {'selector': ids['selector'], 'validator': ids['validator']}
-        else:
-            return {'selector': ids['selector']}
-
-    @classmethod
-    def get(cls, db, **ids):
-        try:
-            ses = super().get(db, **ids)
-        except NoSessionError:
-            validator = ids.pop('validator')
-            series = cls.find(db, **ids).first()
-            if series is not None:
-                raise SecurityError(f'[УКРАДЕННЫЙ ТОКЕН] {ids["selector"]}:{validator}') # noqa
-
-        return ses
-
-    @classmethod
-    def change(cls, db, new_validator, new_association, **ids):
-        # TODO: некрасивый метод, переписать
-        old = cls.find(db, **ids)
-        old.update({cls.classname.validator: new_validator,
-                    cls.classname.associated_sid: new_association})
