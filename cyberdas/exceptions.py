@@ -8,7 +8,3 @@ class NoSessionError(SessionError):
 
 class BadAuthError(SessionError):
     pass
-
-
-class SecurityError(Exception):
-    pass

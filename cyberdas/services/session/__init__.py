@@ -1,3 +1,3 @@
-from .proxy import ManagerProxy as SessionManager
+from .manager import SessionManager
 
 __all__ = ['SessionManager']
