@@ -1,18 +1,21 @@
 import os
 import re
 import base64
+from smtplib import SMTPNotSupportedError
+from time import sleep
 import pytest
 from unittest.mock import MagicMock
 
 from itsdangerous import URLSafeTimedSerializer
 
-from cyberdas.services import Mail, SignupMail
+from cyberdas.services import Mail
 from cyberdas.config import get_cfg
 
 HOSTNAME = '127.0.0.1'
 PORT = 8025
 LOGIN = 'lol'
 PASSWORD = 'kek'
+SENDER = 'signup'
 
 # Эти настройки нужны для модуля smtpdfix, предоставляющего fixture - smtpd
 os.environ['SMTPD_HOST'] = HOSTNAME
@@ -27,8 +30,9 @@ def mock_smtp_cfg():
     cfg = get_cfg()
     cfg.set('mail', 'server', HOSTNAME)
     cfg.set('mail', 'port', str(PORT))
-    cfg.set('mail', 'login', LOGIN)
-    cfg.set('mail', 'password', PASSWORD)
+    cfg.set('mail', f'{SENDER}.login', LOGIN)
+    cfg.set('mail', f'{SENDER}.password', PASSWORD)
+    cfg.set('mail', f'{SENDER}.expiry', '0')
     yield cfg
 
 
@@ -60,7 +64,11 @@ class TestMail:
 
     @pytest.fixture(scope = 'class')
     def mail(self, mock_smtp_cfg):
-        yield Mail(mock_smtp_cfg)
+        yield Mail(mock_smtp_cfg, SENDER)
+
+    @pytest.fixture(scope = 'class')
+    def token(self, mail):
+        yield mail.generate_token(self.to)
 
     def test_token(self, mail):
         'Проверка алгоритма генерации токена с помощью его дешифровки'
@@ -73,9 +81,32 @@ class TestMail:
         assert deciphered is not None
         assert deciphered == self.to
 
-    def test_bad_token(self, mail):
+    def test_token_deciphered(self, mail, token):
+        'Проверка расшифровки токена'
+        deciphered = mail.confirm_token(token)
+        assert deciphered is not None
+        assert deciphered == self.to
+
+    def test_token_expiry(self, mail, token):
+        'Проверка возможности просрочить токен'
+        sleep(1)
+        # да, ставить слипы в тесты - очень плохо, но токен должен
+        # просуществовать минимум секунду что бы просрочиться
+        deciphered = mail.confirm_token(token, expires = True)
+        assert deciphered is False
+
+    def test_token_bad(self, mail):
         'Проверка поведения функции расшифровки токена при плохом вводе'
         assert mail.confirm_token('blablabla') is False
+
+    def test_token_gen(self, mail):
+        'Проверка интерфейса генерации токенов'
+        # словари
+        token = mail.generate_token({'email': self.to})
+        assert mail.confirm_token(token)['email'] == self.to
+        # списки
+        token = mail.generate_token([self.to, self.subject])
+        assert len(mail.confirm_token(token)) == 2
 
     @pytest.mark.parametrize("input_addr", [
         'hello@lol.ru', 'ivan@ivanovi.com', 'where@com', 'hello123@site.net'
@@ -103,6 +134,7 @@ class TestMail:
 
     def test_email_ssl(self, mail, smtpd):
         'Проверяет, что без SSL письма не отправляются'
+        with pytest.raises(SMTPNotSupportedError):
         mail.send(self.to, self.subject, self.content, MagicMock())
         assert len(smtpd.messages) == 0
 
