@@ -8,7 +8,7 @@ from unittest.mock import MagicMock
 
 from itsdangerous import URLSafeTimedSerializer
 
-from cyberdas.services import Mail
+from cyberdas.services import Mail, TransactionMail
 from cyberdas.config import get_cfg
 
 HOSTNAME = '127.0.0.1'
@@ -135,61 +135,75 @@ class TestMail:
     def test_email_ssl(self, mail, smtpd):
         'Проверяет, что без SSL письма не отправляются'
         with pytest.raises(SMTPNotSupportedError):
-        mail.send(self.to, self.subject, self.content, MagicMock())
+            mail.send(self.to, self.subject, self.content, MagicMock())
         assert len(smtpd.messages) == 0
 
 
-class TestSignupMail:
+class TestTransactionMail:
 
     email = 'lol@das.net'
     prefix = 'api.cyberdas.net/'
-    next = 'cyberdas.net/verify'
+    frontend = 'https://cyberdas.net'
+    next = 'verify'
+    backend_next = 'signup/validate'
 
     @pytest.fixture(scope = 'class')
     def mail(self, mock_smtp_cfg):
-        yield SignupMail(mock_smtp_cfg)
+        yield TransactionMail(
+            mock_smtp_cfg, SENDER, 'Transaction for you!', 'signup',
+            self.frontend, self.backend_next, False
+        )
 
-    def test_token_gen(self, mail):
-        'Проверка интерфейса генерации токенов'
-        token = mail.generate_token(self.email)
-        assert mail.confirm_token(token)['email'] == self.email
-
-    def test_token_redirect_gen(self, mail):
-        'Проверка интерфейса генерации токенов для писем с переадрессацией'
-        token = mail.generate_token(self.email, self.next)
-        data = mail.confirm_token(token)
-        assert data['email'] == self.email
-        assert data['redirect'] == self.next
-
-    def test_bad_token(self, mail):
-        'Проверка поведения функции расшифровки токена при плохом вводе'
-        assert mail.confirm_token('blablabla') is False
-
-    def extract_token(self, letter):
+    def extract_token(self, letter, isFront = False):
         'Извлекает токен из верификационного письма'
         payload = letter.get_payload()[0].get_payload()
         payload = base64.b64decode(payload.encode('utf-8')).decode('utf-8')
-        token = re.findall(r'/verify\?[\w\=\.\-\_]+', payload)[0]
+        if isFront:
+            location = f'{self.frontend}/{self.next}'
+        else:
+            location = f'{self.prefix}/{self.backend_next}'
+        token = re.findall(rf'{location}\?[\w\=\.\-\_]+', payload)[0]
         token = token.split('=')[1]
         return token
 
     @pytest.fixture
     def messages(self, mail, smtpd_tls):
         'Возвращает сообщения, посланные модулем'
+        req = MockReq(self.prefix)
+        mail.send(req, self.email, {'email': self.email})
+        yield smtpd_tls.messages
+
+    @pytest.fixture
+    def messages_next(self, mail, smtpd_tls):
+        'Возвращает сообщения, посланные модулем (с переадресацией `next`)'
         req = MockReq(self.prefix, self.next)
-        mail.send_verification(req, self.email)
+        mail.send(req, self.email, {'email': self.email})
         yield smtpd_tls.messages
 
     def test_email_sent(self, messages):
         'Проверяет, что письмо было послано и дошло'
         assert len(messages) == 1
 
+    def test_email_sent_next(self, messages_next):
+        'Проверяет, что письмо было послано и дошло (с переадресацией `next`)'
+        assert len(messages_next) == 1
+
     def test_email_contains_token(self, messages):
         'Проверяет наличие токена в письме'
         token = self.extract_token(messages[0])
         assert token is not False
 
+    def test_email_contains_token_next(self, messages_next):
+        'Проверяет наличие токена в письме (с переадресацией `next`)'
+        token = self.extract_token(messages_next[0], True)
+        assert token is not False
+
     def test_email_token_validity(self, mail, messages):
         'Проверяет валидность токена в письме'
         token = self.extract_token(messages[0])
+        assert mail.confirm_token(token) is not False
+
+    def test_email_token_validity_next(self, mail, messages_next):
+        'Проверяет валидность токена в письме (с переадресацией `next`)'
+        token = self.extract_token(messages_next[0], True)
         assert mail.confirm_token(token) is not False
