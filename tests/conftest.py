@@ -17,10 +17,17 @@ def defaultDB(mockDB):
     База данных, содержащая двух зарегистрированных пользователя
     '''
     db = mockDB
-    faculty = Faculty(id = 1, name = 'faculty')
-    users = db.generate_users(2, ['user@mail.com'])
+
+    faculty_name = 'faculty'
+    faculty = Faculty(id = 1, name = faculty_name)
+    environ['FACULTY_NAME'] = faculty_name
+
+    email = 'user@mail.com'
+    users = db.generate_users(2, email)
+    environ['REGISTERED_USER_EMAIL'] = email
     users[0].faculty = faculty
     users[1].faculty = faculty
+
     db.setup_models(users)
     yield db
 
