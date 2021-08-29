@@ -19,15 +19,15 @@
                 "patronymic": {
                     "type": "string"
                 },
-                "faculty": {
-                    "type": "string"
+                "faculty_id": {
+                    "type": "integer"
                 }
             },
             "required": [
                 "email",
                 "name",
                 "surname",
-                "faculty"
+                "faculty_id"
             ],
             "title": "SignupRequest"
         }

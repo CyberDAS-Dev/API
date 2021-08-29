@@ -4,7 +4,7 @@ from os import path
 import falcon
 from falcon.media.validators import jsonschema
 
-from cyberdas.models import Faculty, User
+from cyberdas.models import User
 from cyberdas.services import TransactionMailFactory
 
 
@@ -46,18 +46,8 @@ class Sender:
         # Важный пункт - убираем пробелы из пользовательских данных.
         # Многие люди случайно оставляют пробелы когда заполняют веб-формы
         for key, value in data.items():
-            data[key] = value.strip()
-
-        # Проверка, что указанный факультет существует
-        faculty = dbses.query(Faculty).filter_by(name = data['faculty']).first()
-        if faculty is None:
-            log.debug('[НЕСУЩЕСТВУЮЩИЙ ФАКУЛЬТЕТ] email %s' % data['email'])
-            raise falcon.HTTPBadRequest(
-                description = 'Такой факультет не существует'
-            )
-
-        # Заменяем поле с факультетом на его айди
-        data['faculty'] = faculty.id
+            if isinstance(value, str):
+                data[key] = value.strip()
 
         # Проверка, что адрес почты не занят
         user = dbses.query(User).filter_by(email = data['email']).first()
@@ -114,7 +104,7 @@ class Validator:
             name = data['name'], surname = data['surname'],
             patronymic = (data['patronymic'] if 'patronymic' in data.keys()
                           else None),
-            faculty_id = data['faculty']
+            faculty_id = data['faculty_id']
         )
 
         dbses.add(newUser)

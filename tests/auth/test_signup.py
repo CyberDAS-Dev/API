@@ -31,8 +31,8 @@ class TestSender:
         {},
         {"email": USER_EMAIL, "name": "Иван"},
         {"name": "Иван", "surname": "Иванов", "patronymic": "Иванович"},
-        {"email": USER_EMAIL, "faculty": FACULTY_NAME},
-        {"email": USER_EMAIL, "faculty": FACULTY_NAME,
+        {"email": USER_EMAIL, "faculty_id": FACULTY_NAME},
+        {"email": USER_EMAIL, "faculty_id": FACULTY_NAME,
          "name": "Иван", "patronymic": "Иванович"}
     ])
     def test_lacking_data(self, client, input_json):
@@ -41,11 +41,11 @@ class TestSender:
         assert resp.status == falcon.HTTP_400
 
     @pytest.mark.parametrize("input_json", [
-        {"email": "badmail", "faculty": FACULTY_NAME,
+        {"email": "badmail", "faculty_id": 1,
          "name": "Иван", "surname": "Иванов"},
-        {"email": USER_EMAIL, "faculty": "bad",
+        {"email": USER_EMAIL, "faculty_id": "bad",
          "name": "Иван", "surname": "Иванов"},
-        {"email": REGISTERED_USER_EMAIL, "faculty": FACULTY_NAME,
+        {"email": REGISTERED_USER_EMAIL, "faculty_id": 1,
          "name": "Иван", "surname": "Иванов"},
     ])
     def test_bad_data(self, client, input_json, defaultDB):
@@ -72,11 +72,10 @@ class TestSender:
         того, что он вызывался с нашим USER_EMAIL. Сам модуль отправки
         тестируется в test_mail.
         '''
-        json = {"email": USER_EMAIL, "faculty": FACULTY_NAME,
+        json = {"email": USER_EMAIL, "faculty_id": 1,
                 "name": "Иван", "surname": "Иванов"}
         resp = client.simulate_post(self.URI, json = json)
         assert resp.status == falcon.HTTP_202
-        json['faculty'] = 1  # автозамена факультета на его ID
         smtp_mock.assert_called_with(ANY, USER_EMAIL, json)
 
     def test_user_not_created(self, dbses):
@@ -89,12 +88,10 @@ class TestSender:
         Данные из пользовательских форм должны stripаться для предотвращения
         неверных результатов запросов к БД.
         '''
-        json = {"email": '  ' + USER_EMAIL + '   ', "faculty": '  ' + FACULTY_NAME, # noqa
+        json = {"email": '  ' + USER_EMAIL + '   ', "faculty_id": 1,
                 "name": "Иван  ", "surname": "  Иванов  "}
-        stripped_json = dict()
-        for key, value in json.items():
-            stripped_json[key] = value.strip()
-        stripped_json['faculty'] = 1  # автозамена факультета на его ID
+        stripped_json = {"email": USER_EMAIL, "faculty_id": 1,
+                         "name": "Иван", "surname": "Иванов"}
         resp = client.simulate_post(self.URI, json = json)
         assert resp.status == falcon.HTTP_202
         smtp_mock.assert_called_with(ANY, USER_EMAIL, stripped_json)
@@ -116,14 +113,14 @@ class TestValidate:
     @pytest.fixture(scope = 'class')
     def token(self):
         mail = TransactionMail(cfg, **self.mail_args)
-        json = {"email": USER_EMAIL, "faculty": 1,
+        json = {"email": USER_EMAIL, "faculty_id": 1,
                 "name": "Иван", "surname": "Иванов"}
         yield mail.generate_token(json)
 
     @pytest.fixture(scope = 'class')
     def reg_token(self):
         mail = TransactionMail(cfg, **self.mail_args)
-        json = {"email": REGISTERED_USER_EMAIL, "faculty": 1,
+        json = {"email": REGISTERED_USER_EMAIL, "faculty_id": 1,
                 "name": "Иван", "surname": "Иванов"}
         yield mail.generate_token(json)
 

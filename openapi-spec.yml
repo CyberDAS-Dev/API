@@ -599,13 +599,13 @@ components:
                 type: string
               patronymic:
                 type: string
-              faculty:
-                type: string
+              faculty_id:
+                type: integer
             required:
               - email
               - name
               - surname
-              - faculty
+              - faculty_id
 
     Login:
       description: JSON-объект, содержащий адрес почты для логина
