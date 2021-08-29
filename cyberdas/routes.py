@@ -6,6 +6,7 @@ from .resources import (
     slots,
     signup,
     login,
+    logout,
 )
 from .services import (
     TransactionMailFactory,
@@ -35,3 +36,4 @@ def route(api):
     api.add_route('/account/login', login.Sender(mail_factory))
     api.add_route('/account/login/validate', login.Validator(mail_factory,
                                                              session_manager))
+    api.add_route('/account/logout', logout.Logout(session_manager))
