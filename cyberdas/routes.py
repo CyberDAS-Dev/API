@@ -3,16 +3,17 @@ from .config import get_cfg
 
 from .resources import (
     queues,
-    slots
+    slots,
+    signup,
 )
 from .services import (
-    SignupMail,
-    SessionManager
+    TransactionMailFactory,
+    SessionManager,
 )
 
 # Инициализация компонентов
 cfg = get_cfg()
-mail = SignupMail(cfg)
+mail_factory = TransactionMailFactory(cfg)
 session_manager = SessionManager()
 ###
 
@@ -28,3 +29,5 @@ def route(api):
     api.add_route('/queues/{queueName}/slots', slots.Collection())
     api.add_route('/queues/{queueName}/slots/{slotId}', slots.Item())
     api.add_route('/queues/{queueName}/slots/{slotId}/reserve', slots.Reserve())
+    api.add_route('/account/signup', signup.Sender(mail_factory))
+    api.add_route('/account/signup/validate', signup.Validator(mail_factory))
