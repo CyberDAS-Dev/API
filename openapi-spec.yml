@@ -183,7 +183,7 @@ paths:
               schema: 
                 type: string
                 example: SESSIONID=abcde12345; Path=/; HttpOnly
-            XCSRF-token: 
+            X-CSRF-Token: 
               schema:
                 type: string
                 example: WfF1szMUHhiokx9AHFply5L2xAOfjRkE
