@@ -101,6 +101,14 @@ class TestCollection:
             slots[0].user_id = None
             slots[5].user_id = None
 
+    def test_get_my_unauth(self, client, queueDB):
+        '''
+        На запрос с my в query от неаутентифицированного пользователя
+        возвращается HTTP 401
+        '''
+        resp = client.simulate_get(self.URI, params = {'my': 1})
+        assert resp.status == falcon.HTTP_401
+
 
 class TestItem:
 
