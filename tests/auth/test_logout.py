@@ -30,7 +30,7 @@ class TestLogout:
             self.URI,
             cookies = {'SESSIONID': auth['SESSIONID']}
         )
-        assert resp.status == falcon.HTTP_200
+        assert resp.status == falcon.HTTP_204
         assert resp.cookies['SESSIONID'].max_age == -1
 
     def test_clean_db(self, dbses):
