@@ -39,8 +39,8 @@ class LoggerMiddleware(object):
             uid = None
 
         data = {'method': req.method, 'uri': req.forwarded_uri,
-                'ip': req.access_route[-1], 'agent': req.user_agent,
-                'uid': uid, 'status': resp.status[:3]}
+                'ip': req.get_header('X-Real-IP') or req.access_route[-1],
+                'agent': req.user_agent, 'uid': uid, 'status': resp.status[:3]}
         if uid is None:
             message = "{method} {uri} {ip} {agent} {status}"
         else:
