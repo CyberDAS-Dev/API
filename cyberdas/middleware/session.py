@@ -1,6 +1,7 @@
 import falcon
 
 from cyberdas.services.session import SessionManager
+from cyberdas.exceptions import BadAuthError
 
 
 class SessionMiddleware:
@@ -102,8 +103,9 @@ class SessionMiddleware:
             return
 
         try:
-            req.context['user'] = self.manager.authorize(req)
-        except Exception:
+            req.context['user'] = self.manager.authenticate(req.context.session,
+                                                            req.cookies)
+        except BadAuthError:
             req.context['user'] = None
             raise falcon.HTTPUnauthorized
 
