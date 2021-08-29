@@ -57,8 +57,7 @@ class MockDB(object):
         for x in range(1, n + 1):
             user = User(
                 email = emails[x - 1] if len(emails) >= x else self._random_email(), # noqa
-                name = self._random_string(), surname = self._random_string(),
-                verified = False
+                name = self._random_string(), surname = self._random_string()
             )
             lst.append(user)
         return lst

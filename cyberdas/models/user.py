@@ -37,9 +37,6 @@ class User(Base):
             faculty_id - Integer
                 Хранит идентификатор факультета, на котором учится пользователя
 
-            verified - Boolean
-                'Галочка' верификации профиля
-
             created_at - DateTime
                 Хранит дату регистрации пользователя
                 При регистрации пользователя автоматически устанавливается БД
@@ -65,7 +62,6 @@ class User(Base):
     surname = Column(Text, nullable = False)
     patronymic = Column(Text, nullable = True)
     faculty_id = Column(Integer, ForeignKey('faculties.id'), nullable = False)
-    verified = Column(Boolean, nullable = False)
     created_at = Column(DateTime(timezone = True), nullable = False,
                         server_default = func.now())
 
