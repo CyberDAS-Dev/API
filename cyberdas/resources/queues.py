@@ -5,6 +5,8 @@ from cyberdas.models import Queue
 
 class Collection:
 
+    auth = {'disabled': 1}
+
     def on_get(self, req, resp):
         '''
         Возвращает список с информацией о всех имеющихся очередях
@@ -18,6 +20,8 @@ class Collection:
 
 
 class Item:
+
+    auth = {'disabled': 1}
 
     def on_get(self, req, resp, queueName):
         '''

@@ -8,6 +8,8 @@ from cyberdas.models import Slot, Queue
 
 class Collection:
 
+    auth = {'disabled': 1}
+
     def on_get(self, req, resp, queueName):
         '''
         Возвращает список с информацией о имеющихся слотах в очереди
@@ -55,13 +57,18 @@ class Collection:
 
         # Если есть флаг `my`, оставляем только слоты пользователя
         if my:
-            slots = slots.filter_by(user_id = req.context.user['uid'])
+            if req.context.user:
+                slots = slots.filter_by(user_id = req.context.user['uid'])
+            else:
+                raise falcon.HTTPUnauthorized()
 
         resp.media = [slot.as_dict() for slot in slots.all()]
         resp.status = falcon.HTTP_200
 
 
 class Item:
+
+    auth = {'disabled': 1}
 
     def on_get(self, req, resp, queueName, slotId):
         '''
