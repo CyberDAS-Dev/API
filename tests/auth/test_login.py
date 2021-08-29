@@ -15,11 +15,13 @@ FACULTY_NAME = environ['FACULTY_NAME']
 REGISTERED_USER_EMAIL = environ['REGISTERED_USER_EMAIL']
 SES_LENGTH = int(get_cfg()['internal']['session.length'])
 
+smtp_mock = MagicMock()
 
+
+@patch('cyberdas.services.TransactionMail.send', new = smtp_mock)
 class TestSender:
 
     URI = '/login'
-    smtp_mock = MagicMock()
 
     def test_get(self, client):
         'Логин не отвечает на GET-запросы'
@@ -35,12 +37,14 @@ class TestSender:
         {"email": "bad@mail.com"},
         {"email": REGISTERED_USER_EMAIL}
     ])
-    def test_bad_data(self, client, oneUserDB, input_json):
-        'При вводе неверного эмэйла возвращается 400 Bad Request'
+    def test_bad_data(self, client, input_json):
+        '''
+        При вводе неверного (или уже зарегистрированного) эмэйла
+        возвращается HTTP 400
+        '''
         resp = client.simulate_post(self.URI, json = input_json)
         assert resp.status == falcon.HTTP_400
 
-    @patch('cyberdas.services.TransactionMail.send', new = smtp_mock)
     def test_post(self, client, defaultDB):
         '''
         Эндпоинт логина должен возвращать 202 OK в случае успеха, а так же
@@ -53,9 +57,8 @@ class TestSender:
         json = {"email": REGISTERED_USER_EMAIL}
         resp = client.simulate_post(self.URI, json = json)
         assert resp.status == falcon.HTTP_202
-        self.smtp_mock.assert_called_once_with(ANY, REGISTERED_USER_EMAIL, json)
+        smtp_mock.assert_called_once_with(ANY, REGISTERED_USER_EMAIL, json)
 
-    @patch('cyberdas.services.TransactionMail.send', new = smtp_mock)
     def test_post_unexisting(self, client, defaultDB):
         '''
         Эндпоинт логина посылает письмо, даже если пользователь не существует.
@@ -63,37 +66,57 @@ class TestSender:
         json = {"email": USER_EMAIL}
         resp = client.simulate_post(self.URI, json = json)
         assert resp.status == falcon.HTTP_202
-        self.smtp_mock.assert_called_once_with(ANY, USER_EMAIL, json)
+        smtp_mock.assert_called_once_with(ANY, USER_EMAIL, json)
 
     def test_session_not_created(self, dbses):
         'Сессия в БД не создается до подтверждения с почты'
         ses = dbses.query(Session).filter_by(uid = 1).first()
         assert ses is None
 
+    def test_data_is_stripped(self, client, defaultDB):
+        '''
+        Данные из пользовательских форм должны stripаться для предотвращения
+        неверных результатов запросов к БД.
+        '''
+        json = {"email": '  ' + USER_EMAIL + '   '}
+        stripped_json = {"email": USER_EMAIL}
+        resp = client.simulate_post(self.URI, json = json)
+        assert resp.status == falcon.HTTP_202
+        smtp_mock.assert_called_once_with(ANY, USER_EMAIL, stripped_json)
+
 
 class TestValidate:
 
     URI = '/login/validate'
 
+    mail_args = {
+        'sender': 'signup',
+        'subject': 'Регистрация на CyberDAS',
+        'template': 'signup',
+        'frontend': 'https://cyberdas.net',
+        'transaction': 'signup/validate',
+        'expires': True
+    }
+
     @pytest.fixture(scope = 'class')
     def token(self, mail):
-        mail = TransactionMail(cfg, 'signup')
+        mail = TransactionMail(cfg, **self.mail_args)
         json = {"email": USER_EMAIL}
         yield mail.generate_token(json)
 
     def test_token_validation(self, client):
-        'При отправке невалидного токена возвращается HTTP 400'
+        'При отправке невалидного токена возвращается HTTP 403'
         resp = client.simulate_get(self.URI, params = {'token': '123'})
-        assert resp.status == falcon.HTTP_400
+        assert resp.status == falcon.HTTP_403
 
     def test_post_unregistered(self, client, token):
-        'При отправке токена с незарегистрированным эмэйлом возвращается HTTP 400' # noqa
+        'При отправке токена с незарегистрированным эмэйлом возвращается HTTP 403' # noqa
         resp = client.simulate_get(self.URI, params = {'token': token})
-        assert resp.status == falcon.HTTP_400
+        assert resp.status == falcon.HTTP_403
 
     @pytest.fixture(scope = 'class')
     def reg_token(self, mail):
-        mail = TransactionMail(cfg, 'signup')
+        mail = TransactionMail(cfg, **self.mail_args)
         json = {"email": REGISTERED_USER_EMAIL}
         yield mail.generate_token(json)
 
