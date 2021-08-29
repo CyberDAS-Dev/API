@@ -20,7 +20,7 @@ class Mail(object):
         self.sent_from = cfg['mail'][f'{sender}.name']
         self.mail_key = cfg['security'][f'secret.{sender}']
         self.mail_salt = cfg['security'][f'salt.{sender}']
-        self.mail_expiry = int(cfg['mail'][f'{sender}.expiry'])
+        self.mail_expiry = int(cfg['mail'].get(f'{sender}.expiry', None))
 
     def send(self, to, subject, content, log):
         '''
