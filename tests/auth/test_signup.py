@@ -14,11 +14,13 @@ REGISTERED_USER_EMAIL = environ['REGISTERED_USER_EMAIL']
 
 cfg = get_cfg()
 
+smtp_mock = MagicMock()
 
+
+@patch('cyberdas.services.TransactionMail.send', new = smtp_mock)
 class TestSender:
 
     URI = '/signup'
-    smtp_mock = MagicMock()
 
     def test_get(self, client):
         'Регистрация не отвечает на GET-запросы'
@@ -41,8 +43,6 @@ class TestSender:
     @pytest.mark.parametrize("input_json", [
         {"email": "badmail", "faculty": FACULTY_NAME,
          "name": "Иван", "surname": "Иванов"},
-        {"email": USER_EMAIL, "faculty": FACULTY_NAME,
-         "name": "Иван", "surname": "Иванов"},
         {"email": USER_EMAIL, "faculty": "bad",
          "name": "Иван", "surname": "Иванов"},
         {"email": REGISTERED_USER_EMAIL, "faculty": FACULTY_NAME,
@@ -53,13 +53,16 @@ class TestSender:
         Если пользователь ввел:
         - некорректный адрес почты
         - несуществующий факультет
-        - уже зарегистрированную почту
         то, возвращается HTTP 400
+
+        В случае ввода уже зарегистрированной почты возвращается HTTP 403
         '''
         resp = client.simulate_post(self.URI, json = input_json)
-        assert resp.status == falcon.HTTP_400
+        if input_json['email'] == REGISTERED_USER_EMAIL:
+            assert resp.status == falcon.HTTP_403
+        else:
+            assert resp.status == falcon.HTTP_400
 
-    @patch('cyberdas.services.TransactionMail.send', new = smtp_mock)
     def test_post(self, client, defaultDB):
         '''
         Эндпоинт регистрации должен возвращать 202 OK в случае успеха, а так же
@@ -73,28 +76,51 @@ class TestSender:
                 "name": "Иван", "surname": "Иванов"}
         resp = client.simulate_post(self.URI, json = json)
         assert resp.status == falcon.HTTP_202
-        self.smtp_mock.assert_called_once_with(ANY, USER_EMAIL, json)
+        smtp_mock.assert_called_once_with(ANY, USER_EMAIL, json)
 
     def test_user_not_created(self, dbses):
         'Пользователь в БД не создается до подтверждения с почты'
         user = dbses.query(User).filter_by(email = USER_EMAIL).first()
         assert user is None
 
+    def test_data_is_stripped(self, client, defaultDB):
+        '''
+        Данные из пользовательских форм должны stripаться для предотвращения
+        неверных результатов запросов к БД.
+        '''
+        json = {"email": '  ' + USER_EMAIL + '   ', "faculty": '  ' + FACULTY_NAME, # noqa
+                "name": "Иван  ", "surname": "  Иванов  "}
+        stripped_json = dict()
+        for key, value in json.items():
+            stripped_json[key] = value.strip()
+        resp = client.simulate_post(self.URI, json = json)
+        assert resp.status == falcon.HTTP_202
+        smtp_mock.assert_called_once_with(ANY, USER_EMAIL, stripped_json)
+
 
 class TestValidate:
 
     URI = '/signup/validate'
 
+    mail_args = {
+        'sender': 'signup',
+        'subject': 'Регистрация на CyberDAS',
+        'template': 'signup',
+        'frontend': 'https://cyberdas.net',
+        'transaction': 'signup/validate',
+        'expires': True
+    }
+
     @pytest.fixture(scope = 'class')
-    def token(self, mail):
-        mail = TransactionMail(cfg, 'signup')
+    def token(self):
+        mail = TransactionMail(cfg, **self.mail_args)
         json = {"email": USER_EMAIL, "faculty": FACULTY_NAME,
                 "name": "Иван", "surname": "Иванов"}
         yield mail.generate_token(json)
 
     @pytest.fixture(scope = 'class')
-    def reg_token(self, mail):
-        mail = TransactionMail(cfg, 'signup')
+    def reg_token(self):
+        mail = TransactionMail(cfg, **self.mail_args)
         json = {"email": REGISTERED_USER_EMAIL, "faculty": FACULTY_NAME,
                 "name": "Иван", "surname": "Иванов"}
         yield mail.generate_token(json)

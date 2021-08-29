@@ -10,6 +10,9 @@ from cyberdas.models import Session, Faculty
 
 pytest_plugins = ['utils.mockDB']
 
+environ['FACULTY_NAME'] = 'faculty'
+environ['REGISTERED_USER_EMAIL'] = 'user@mail.com'
+
 
 @pytest.fixture(scope = 'class')
 def defaultDB(mockDB):
@@ -17,17 +20,10 @@ def defaultDB(mockDB):
     База данных, содержащая двух зарегистрированных пользователя
     '''
     db = mockDB
-
-    faculty_name = 'faculty'
-    faculty = Faculty(id = 1, name = faculty_name)
-    environ['FACULTY_NAME'] = faculty_name
-
-    email = 'user@mail.com'
-    users = db.generate_users(2, email)
-    environ['REGISTERED_USER_EMAIL'] = email
+    faculty = Faculty(id = 1, name = environ['FACULTY_NAME'])
+    users = db.generate_users(2, [environ['REGISTERED_USER_EMAIL']])
     users[0].faculty = faculty
     users[1].faculty = faculty
-
     db.setup_models(users)
     yield db
 
