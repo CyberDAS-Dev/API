@@ -30,7 +30,7 @@ class TransactionMail(Mail):
         self.transaction_url = transaction
         self.expires = expires
 
-    def send(self, req, to, data):
+    def send(self, req, to, data, template_data = {}):
         '''
         Отправляет письмо с подтверждением некоторого действия на указанный
         ящик и возвращает URL, подставленный в шаблон письма.
@@ -44,6 +44,9 @@ class TransactionMail(Mail):
 
             data(dict, необходим): словарь с размеченными данными для отправки
                 в токене и последующего использования на валидационном эндпоинте
+
+            template_data(dict, опционально): словарь с данными для заполнения
+                шаблона письма.
         '''
         token = self.generate_token(data)
 
@@ -56,8 +59,8 @@ class TransactionMail(Mail):
             url = f'{req.forwarded_prefix}/{self.transaction_url}?token={token}'
 
         # Рендерим шаблоны письма (HTML и текстовый)
-        html_template = load_template(self.template).render(transaction_url = url) # noqa
-        plain_template = load_template(self.template+'_plain').render(transaction_url = url) # noqa
+        html_template = load_template(self.template).render(transaction_url = url, **template_data) # noqa
+        plain_template = load_template(self.template+'_plain').render(transaction_url = url, **template_data) # noqa
 
         # Отправляем письмо
         super().send(
