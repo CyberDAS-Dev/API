@@ -98,15 +98,14 @@ class SessionMiddleware:
             or req.method in self.config['exempt_methods'][str(resource)]
         )
 
-        if exempted:
-            req.context['user'] = None
-            return
-
         try:
             req.context['user'] = self.manager.authenticate(req.context.session,
                                                             req.cookies)
         except BadAuthError:
             req.context['user'] = None
-            raise falcon.HTTPUnauthorized
+            if exempted:
+                return
+            else:
+                raise falcon.HTTPUnauthorized
 
         self.csrf_protect(req)
