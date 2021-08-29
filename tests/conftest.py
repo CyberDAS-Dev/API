@@ -49,8 +49,8 @@ def auth(defaultDB):
                       expires = datetime(datetime.now().year + 1, 12, 31))
     defaultDB.setup_models(session)
     environ['SESSIONID'] = sid
-    environ['XCSRF-Token'] = csrf_token
-    yield {"SESSIONID": sid, "XCSRF-Token": csrf_token}
+    environ['X-CSRF-Token'] = csrf_token
+    yield {"SESSIONID": sid, "X-CSRF-Token": csrf_token}
 
 
 class AuthorizedClient(testing.TestClient):
@@ -59,7 +59,7 @@ class AuthorizedClient(testing.TestClient):
         return super().simulate_request(
             *args, **kwargs,
             cookies = {'SESSIONID': environ['SESSIONID']},
-            headers = {'XCSRF-Token': environ['XCSRF-Token']}
+            headers = {'X-CSRF-Token': environ['X-CSRF-Token']}
         )
 
 
