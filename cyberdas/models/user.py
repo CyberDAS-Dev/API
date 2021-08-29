@@ -4,7 +4,6 @@ from sqlalchemy import (
     Integer,
     Text,
     DateTime,
-    Boolean
 )
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -42,6 +41,11 @@ class User(Base):
                 При регистрации пользователя автоматически устанавливается БД
                 с помощью SQL now()
 
+            last_session - DateTime
+                Хранит дату начала последней сессии пользователя
+                При регистрации пользователя автоматически устанавливается БД
+                с помощью SQL now()
+
         Взаимоотношения:
             faculty - многие-к-одному
                 Задает соответствие между пользователем и факультетом его
@@ -64,6 +68,8 @@ class User(Base):
     faculty_id = Column(Integer, ForeignKey('faculties.id'), nullable = False)
     created_at = Column(DateTime(timezone = True), nullable = False,
                         server_default = func.now())
+    last_session = Column(DateTime(timezone = True), nullable = False,
+                          server_default = func.now())
 
     faculty = relationship('Faculty', back_populates = 'population')
     sessions = relationship('Session', back_populates = 'user')

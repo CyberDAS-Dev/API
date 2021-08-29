@@ -1,6 +1,6 @@
-
 import json
 from os import path
+from datetime import datetime
 
 import falcon
 from falcon.media.validators import jsonschema
@@ -99,6 +99,9 @@ class Validator:
             'ip': req.get_header('X-Real-IP') or req.access_route[-1]
         }
         cookie, csrf_token = self.ses_manager.start(dbses, **session_data)
+
+        user = dbses.query(User).filter_by(id = data['uid']).first()
+        user.last_session = datetime.now()
 
         resp.set_cookie(**cookie)
         resp.set_header(name = 'X-CSRF-Token', value = csrf_token)
