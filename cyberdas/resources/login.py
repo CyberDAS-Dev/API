@@ -14,7 +14,7 @@ mail_args = {
     'sender': 'signup',
     'subject': 'Вход в аккаунт на CyberDAS',
     'template': 'login',
-    'transaction': 'login/validate',
+    'transaction': 'account/login/validate',
     'expires': True
 }
 
