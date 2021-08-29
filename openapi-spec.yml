@@ -49,7 +49,7 @@ paths:
           in: query
           required: false
           allowEmptyValue: false
-          description: Ресурс, на который нужно перенаправить пользователя после успешной регистрации
+          description: Ресурс, на который должна вести ссылка из письма
           schema:
             type: string
 
@@ -57,7 +57,7 @@ paths:
         $ref: '#/components/requestBodies/Signup'
       
       responses:
-        '200':
+        '202':
           description: Письмо отправлено. Для завершения регистрации нужно перейти по ссылке из письма
         '403':
           description: Пользователь с такой почтой уже зарегистрирован
@@ -87,13 +87,8 @@ paths:
             format: byte
 
       responses:
-        '303':
+        '201':
           description: Аккаунт создан
-          headers: 
-            Location:
-              schema: 
-                type: string
-                example: api.cyberdas.net/v1/account/login
         '403':
           description: Неверный токен
           content:
@@ -116,24 +111,17 @@ paths:
           in: query
           required: false
           allowEmptyValue: false
-          description: Ресурс, на который нужно перенаправить пользователя после успешного логина
+          description: Ресурс, на который должна вести ссылка из письма
           schema:
             type: string
-        - name: short_session
-          in: query
-          required: false
-          allowEmptyValue: true
-          description: Если присутствует в query, то сессия завершится при выходе из браузера
-          schema: 
-            type: boolean
 
       requestBody:
         $ref: '#/components/requestBodies/Login'
       
       responses:
-        '200':
+        '202':
           description: Письмо отправлено. Для логина нужно перейти по ссылке из письма
-        '401':
+        '400':
           description: Неверный адрес почты
           content:
             application/json:
@@ -161,20 +149,7 @@ paths:
             format: byte
 
       responses:
-        '200':
-          description: >
-            Успешная авторизация.
-            Идентификатор сессии возвращается в 'SESSIONID'-куки. Этот куки должен использоваться для дальнейших запросов.
-          headers: 
-            Set-Cookie:
-              schema: 
-                type: string
-                example: SESSIONID=abcde12345; Path=/; HttpOnly
-            XCSRF-token: 
-              schema:
-                type: string
-                example: WfF1szMUHhiokx9AHFply5L2xAOfjRkE
-        '303':
+        '201':
           description: >
             Успешная авторизация.
             Идентификатор сессии возвращается в 'SESSIONID'-куки. Этот куки должен использоваться для дальнейших запросов.
@@ -187,12 +162,8 @@ paths:
               schema:
                 type: string
                 example: WfF1szMUHhiokx9AHFply5L2xAOfjRkE
-            Location:
-              schema: 
-                type: string
-                example: cyberdas.net
         '403':
-          description: Неверный токен
+          description: Неверный или просроченный токен
           content:
             application/json:
               schema:
@@ -208,7 +179,7 @@ paths:
         - Аутентификация
 
       responses:
-        '200':
+        '204':
           description: Сессия успешно завершена.
         '401':
           $ref: '#/components/responses/UnauthenticatedError'
