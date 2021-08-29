@@ -114,7 +114,7 @@ class Validator:
             name = data['name'], surname = data['surname'],
             patronymic = (data['patronymic'] if 'patronymic' in data.keys()
                           else None),
-            faculty_id = data['faculty'], verified = False
+            faculty_id = data['faculty']
         )
 
         dbses.add(newUser)
