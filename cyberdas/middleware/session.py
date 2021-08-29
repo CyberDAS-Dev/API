@@ -74,7 +74,7 @@ class SessionMiddleware:
             req(необходим): текущий запрос.
         '''
         if req.method == 'POST':
-            csrf = req.get_header('XCSRF-Token')
+            csrf = req.get_header('X-CSRF-Token')
             if csrf is None or csrf != req.context['user']['csrf_token']:
                 req.context.logger.error(
                     '[ПОПЫТКА CSRF] uid %s, sid %s'

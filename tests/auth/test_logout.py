@@ -5,7 +5,7 @@ from cyberdas.models import Session
 
 class TestLogout:
 
-    URI = '/logout'
+    URI = '/account/logout'
 
     def test_unauthorized(self, client):
         'При попытке выйти не залогинившись, возвращается 401 Unauthorized'
@@ -17,7 +17,7 @@ class TestLogout:
         resp = client.simulate_post(
             self.URI,
             cookies = {'SESSIONID': auth['SESSIONID']},
-            headers = {'XCSRF-Token': auth['XCSRF-Token']}
+            headers = {'X-CSRF-Token': auth['X-CSRF-Token']}
         )
         assert resp.status == falcon.HTTP_405
 
