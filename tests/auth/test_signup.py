@@ -20,7 +20,7 @@ smtp_mock = MagicMock()
 @patch('cyberdas.services.TransactionMail.send', new = smtp_mock)
 class TestSender:
 
-    URI = '/signup'
+    URI = '/account/signup'
 
     def test_get(self, client):
         'Регистрация не отвечает на GET-запросы'
@@ -76,7 +76,8 @@ class TestSender:
                 "name": "Иван", "surname": "Иванов"}
         resp = client.simulate_post(self.URI, json = json)
         assert resp.status == falcon.HTTP_202
-        smtp_mock.assert_called_once_with(ANY, USER_EMAIL, json)
+        json['faculty'] = 1  # автозамена факультета на его ID
+        smtp_mock.assert_called_with(ANY, USER_EMAIL, json)
 
     def test_user_not_created(self, dbses):
         'Пользователь в БД не создается до подтверждения с почты'
@@ -93,14 +94,15 @@ class TestSender:
         stripped_json = dict()
         for key, value in json.items():
             stripped_json[key] = value.strip()
+        stripped_json['faculty'] = 1  # автозамена факультета на его ID
         resp = client.simulate_post(self.URI, json = json)
         assert resp.status == falcon.HTTP_202
-        smtp_mock.assert_called_once_with(ANY, USER_EMAIL, stripped_json)
+        smtp_mock.assert_called_with(ANY, USER_EMAIL, stripped_json)
 
 
 class TestValidate:
 
-    URI = '/signup/validate'
+    URI = '/account/signup/validate'
 
     mail_args = {
         'sender': 'signup',
@@ -114,14 +116,14 @@ class TestValidate:
     @pytest.fixture(scope = 'class')
     def token(self):
         mail = TransactionMail(cfg, **self.mail_args)
-        json = {"email": USER_EMAIL, "faculty": FACULTY_NAME,
+        json = {"email": USER_EMAIL, "faculty": 1,
                 "name": "Иван", "surname": "Иванов"}
         yield mail.generate_token(json)
 
     @pytest.fixture(scope = 'class')
     def reg_token(self):
         mail = TransactionMail(cfg, **self.mail_args)
-        json = {"email": REGISTERED_USER_EMAIL, "faculty": FACULTY_NAME,
+        json = {"email": REGISTERED_USER_EMAIL, "faculty": 1,
                 "name": "Иван", "surname": "Иванов"}
         yield mail.generate_token(json)
 
@@ -133,11 +135,11 @@ class TestValidate:
         assert user is not None
 
     def test_token_validation(self, client):
-        'При отправке невалидного токена возвращается HTTP 400'
+        'При отправке невалидного токена возвращается HTTP 403'
         resp = client.simulate_get(self.URI, params = {'token': '123'})
-        assert resp.status == falcon.HTTP_400
+        assert resp.status == falcon.HTTP_403
 
-    def test_user_not_replaced(self, client, reg_token):
+    def test_registered_user(self, client, reg_token):
         'Уже зарегистрированным пользователям возвращается HTTP 403'
         resp = client.simulate_get(self.URI, params = {'token': reg_token})
         assert resp.status == falcon.HTTP_403
