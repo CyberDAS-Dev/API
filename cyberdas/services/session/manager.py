@@ -93,4 +93,5 @@ class SessionManager:
         except (AssertionError, NoSessionError):
             raise BadAuthError
 
-        return {'uid': ses.uid, 'sid': ses.sid, 'csrf_token': ses.csrf_token}
+        return {'uid': ses.uid, 'sid': ses.sid, 'csrf_token': ses.csrf_token,
+                'ip': ses.ip, 'agent': ses.user_agent}
