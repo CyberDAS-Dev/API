@@ -21,7 +21,7 @@ smtp_mock = MagicMock()
 @patch('cyberdas.services.TransactionMail.send', new = smtp_mock)
 class TestSender:
 
-    URI = '/login'
+    URI = '/account/login'
 
     def test_get(self, client):
         'Логин не отвечает на GET-запросы'
@@ -33,17 +33,19 @@ class TestSender:
         resp = client.simulate_post(self.URI)
         assert resp.status == falcon.HTTP_400
 
-    @pytest.mark.parametrize("input_json", [
-        {"email": "bad@mail.com"},
-        {"email": REGISTERED_USER_EMAIL}
-    ])
-    def test_bad_data(self, client, input_json):
+    def test_bad_data(self, client):
         '''
-        При вводе неверного (или уже зарегистрированного) эмэйла
-        возвращается HTTP 400
+        При вводе не-эмэйла возвращается HTTP 400
         '''
-        resp = client.simulate_post(self.URI, json = input_json)
+        resp = client.simulate_post(self.URI, json = {"email": "lol123"})
         assert resp.status == falcon.HTTP_400
+
+    def test_unregistered_user(self, client):
+        '''
+        При вводе незарегистрированного эмэйла возвращается HTTP 403
+        '''
+        resp = client.simulate_post(self.URI, json = {"email": USER_EMAIL})
+        assert resp.status == falcon.HTTP_403
 
     def test_post(self, client, defaultDB):
         '''
@@ -56,17 +58,9 @@ class TestSender:
         '''
         json = {"email": REGISTERED_USER_EMAIL}
         resp = client.simulate_post(self.URI, json = json)
+        json['uid'] = 1  # автодобавление айди
         assert resp.status == falcon.HTTP_202
-        smtp_mock.assert_called_once_with(ANY, REGISTERED_USER_EMAIL, json)
-
-    def test_post_unexisting(self, client, defaultDB):
-        '''
-        Эндпоинт логина посылает письмо, даже если пользователь не существует.
-        '''
-        json = {"email": USER_EMAIL}
-        resp = client.simulate_post(self.URI, json = json)
-        assert resp.status == falcon.HTTP_202
-        smtp_mock.assert_called_once_with(ANY, USER_EMAIL, json)
+        smtp_mock.assert_called_with(ANY, REGISTERED_USER_EMAIL, json)
 
     def test_session_not_created(self, dbses):
         'Сессия в БД не создается до подтверждения с почты'
@@ -78,28 +72,29 @@ class TestSender:
         Данные из пользовательских форм должны stripаться для предотвращения
         неверных результатов запросов к БД.
         '''
-        json = {"email": '  ' + USER_EMAIL + '   '}
-        stripped_json = {"email": USER_EMAIL}
+        json = {"email": '  ' + REGISTERED_USER_EMAIL + '   '}
+        stripped_json = {"email": REGISTERED_USER_EMAIL}
         resp = client.simulate_post(self.URI, json = json)
+        stripped_json['uid'] = 1  # автодобавление айди
         assert resp.status == falcon.HTTP_202
-        smtp_mock.assert_called_once_with(ANY, USER_EMAIL, stripped_json)
+        smtp_mock.assert_called_with(ANY, REGISTERED_USER_EMAIL, stripped_json)
 
 
 class TestValidate:
 
-    URI = '/login/validate'
+    URI = '/account/login/validate'
 
     mail_args = {
         'sender': 'signup',
-        'subject': 'Регистрация на CyberDAS',
-        'template': 'signup',
+        'subject': 'Вход в аккаунт на CyberDAS',
+        'template': 'login',
         'frontend': 'https://cyberdas.net',
-        'transaction': 'signup/validate',
+        'transaction': 'login/validate',
         'expires': True
     }
 
     @pytest.fixture(scope = 'class')
-    def token(self, mail):
+    def token(self):
         mail = TransactionMail(cfg, **self.mail_args)
         json = {"email": USER_EMAIL}
         yield mail.generate_token(json)
@@ -109,15 +104,10 @@ class TestValidate:
         resp = client.simulate_get(self.URI, params = {'token': '123'})
         assert resp.status == falcon.HTTP_403
 
-    def test_post_unregistered(self, client, token):
-        'При отправке токена с незарегистрированным эмэйлом возвращается HTTP 403' # noqa
-        resp = client.simulate_get(self.URI, params = {'token': token})
-        assert resp.status == falcon.HTTP_403
-
     @pytest.fixture(scope = 'class')
-    def reg_token(self, mail):
+    def reg_token(self):
         mail = TransactionMail(cfg, **self.mail_args)
-        json = {"email": REGISTERED_USER_EMAIL}
+        json = {"email": REGISTERED_USER_EMAIL, "uid": 1}
         yield mail.generate_token(json)
 
     @pytest.fixture(scope = 'class')
@@ -134,8 +124,8 @@ class TestValidate:
         assert 'SESSIONID' in valid_post.cookies
 
     def test_csrf_token(self, valid_post):
-        'В ответе на запрос должен присутствовать заголовок XCSRF-Token'
-        assert 'XCSRF-token' in valid_post.headers
+        'В ответе на запрос должен присутствовать заголовок X-CSRF-Token'
+        assert 'X-CSRF-Token' in valid_post.headers
 
     @pytest.fixture(scope = 'class')
     def session_cookie(self, valid_post):
