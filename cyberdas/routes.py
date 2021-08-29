@@ -5,6 +5,7 @@ from .resources import (
     queues,
     slots,
     signup,
+    login,
 )
 from .services import (
     TransactionMailFactory,
@@ -31,3 +32,6 @@ def route(api):
     api.add_route('/queues/{queueName}/slots/{slotId}/reserve', slots.Reserve())
     api.add_route('/account/signup', signup.Sender(mail_factory))
     api.add_route('/account/signup/validate', signup.Validator(mail_factory))
+    api.add_route('/account/login', login.Sender(mail_factory))
+    api.add_route('/account/login/validate', login.Validator(mail_factory,
+                                                             session_manager))
