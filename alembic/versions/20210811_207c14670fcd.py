@@ -1,4 +1,5 @@
-"""empty message
+"""
+Система очередей
 
 Revision ID: 207c14670fcd
 Revises: 1e2431b413e1
