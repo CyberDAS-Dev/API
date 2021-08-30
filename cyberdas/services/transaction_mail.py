@@ -30,7 +30,7 @@ class TransactionMail(Mail):
         self.transaction_url = transaction
         self.expires = expires
 
-    def send(self, req, to, data, template_data = {}):
+    def send(self, req, to, data, template_data = {}, transaction_url = None):
         '''
         Отправляет письмо с подтверждением некоторого действия на указанный
         ящик и возвращает URL, подставленный в шаблон письма.
@@ -47,16 +47,21 @@ class TransactionMail(Mail):
 
             template_data(dict, опционально): словарь с данными для заполнения
                 шаблона письма.
+
+            transaction_url(string, опционально): строка, позволяющая переписать
+                транзакционный URL для конкретного письма.
         '''
         token = self.generate_token(data)
+        _transaction_url = transaction_url or self.transaction_url
 
         # Если клиент предоставил 'next', то перенаправляем его на фронтенд
         next = req.get_param('next')
+        backend_url = f'{req.forwarded_prefix}/{_transaction_url}'
         if next is not None:
-            url = f'{self.frontend_url}/{next}?token={token}'
+            url = f'{self.frontend_url}/{next}?token={token}&backend={backend_url}' # noqa
         # Иначе, отправляем клиента сразу на валидационный эндпоинт на бэкенде
         else:
-            url = f'{req.forwarded_prefix}/{self.transaction_url}?token={token}'
+            url = f'{backend_url}?token={token}'
 
         # Рендерим шаблоны письма (HTML и текстовый)
         html_template = load_template(self.template).render(transaction_url = url, **template_data) # noqa
