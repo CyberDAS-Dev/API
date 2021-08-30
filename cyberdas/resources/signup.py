@@ -108,5 +108,6 @@ class Validator:
         )
 
         dbses.add(newUser)
-        log.info('[НОВЫЙ ПОЛЬЗОВАТЕЛЬ] email %s' % data['email'])
+        dbses.flush()
+        log.info('[НОВЫЙ ПОЛЬЗОВАТЕЛЬ] email %s uid %s' % (data['email'], newUser.id)) # noqa
         resp.status = falcon.HTTP_201
