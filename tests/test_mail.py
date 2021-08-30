@@ -146,6 +146,7 @@ class TestTransactionMail:
     frontend = 'https://cyberdas.net'
     next = 'verify'
     backend_next = 'signup/validate'
+    fake_transaction = 'lol/kek'
 
     @pytest.fixture(scope = 'class')
     def mail(self, mock_smtp_cfg):
@@ -154,16 +155,22 @@ class TestTransactionMail:
             self.frontend, self.backend_next, False
         )
 
-    def extract_token(self, letter, isFront = False):
+    def extract_url(self, letter, isFront = False, fake_trans = False):
         'Извлекает токен из верификационного письма'
         payload = letter.get_payload()[0].get_payload()
         payload = base64.b64decode(payload.encode('utf-8')).decode('utf-8')
         if isFront:
             location = f'{self.frontend}/{self.next}'
+        elif fake_trans:
+            location = f'{self.prefix}/{self.fake_transaction}'
         else:
             location = f'{self.prefix}/{self.backend_next}'
-        token = re.findall(rf'{location}\?[\w\=\.\-\_]+', payload)[0]
-        token = token.split('=')[1]
+        url = re.findall(rf'{location}\?[\w\=\.\-\_\&\/]+', payload)[0]
+        return url
+
+    def extract_token(self, letter, isFront = False):
+        'Извлекает токен из верификационного письма'
+        token = self.extract_url(letter, isFront).split('=')[1].split('&')[0]
         return token
 
     @pytest.fixture
@@ -178,6 +185,14 @@ class TestTransactionMail:
         'Возвращает сообщения, посланные модулем (с переадресацией `next`)'
         req = MockReq(self.prefix, self.next)
         mail.send(req, self.email, {'email': self.email})
+        yield smtpd_tls.messages
+
+    @pytest.fixture
+    def messages_trans(self, mail, smtpd_tls):
+        'Возвращает сообщения, посланные модулем с переписанным урлом транзакции' # noqa
+        req = MockReq(self.prefix)
+        mail.send(req, self.email, {'email': self.email},
+                  transaction_url = self.fake_transaction)
         yield smtpd_tls.messages
 
     def test_email_sent(self, messages):
@@ -198,6 +213,11 @@ class TestTransactionMail:
         token = self.extract_token(messages_next[0], True)
         assert token is not False
 
+    def test_email_contains_backend_ref_next(self, messages_next):
+        'Проверяет наличие ссылки на бэкенд в письме (с переадресацией `next`)'
+        url = self.extract_url(messages_next[0], True)
+        assert f'backend={self.prefix}/{self.backend_next}' in url
+
     def test_email_token_validity(self, mail, messages):
         'Проверяет валидность токена в письме'
         token = self.extract_token(messages[0])
@@ -206,4 +226,10 @@ class TestTransactionMail:
     def test_email_token_validity_next(self, mail, messages_next):
         'Проверяет валидность токена в письме (с переадресацией `next`)'
         token = self.extract_token(messages_next[0], True)
+        print(token)
         assert mail.confirm_token(token) is not False
+
+    def test_email_transaction_is_rewriteable(self, mail, messages_trans):
+        'Проверяет возможность переписать транзакционный URL для одного письма'
+        url = self.extract_url(messages_trans[0], fake_trans = True)
+        assert f'{self.prefix}/{self.fake_transaction}' in url
