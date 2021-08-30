@@ -4,6 +4,7 @@ from sqlalchemy import (
     Integer,
     Text,
     DateTime,
+    Boolean,
 )
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -36,6 +37,11 @@ class User(Base):
             faculty_id - Integer
                 Хранит идентификатор факультета, на котором учится пользователя
 
+            quick - Boolean
+                Флаг, сигнализирующий о том, что пользователь не проходил полной
+                процедуры регистрации, а был зарегистрирован с помощью
+                `quick_auth`
+
             created_at - DateTime
                 Хранит дату регистрации пользователя
                 При регистрации пользователя автоматически устанавливается БД
@@ -66,6 +72,7 @@ class User(Base):
     surname = Column(Text, nullable = False)
     patronymic = Column(Text, nullable = True)
     faculty_id = Column(Integer, ForeignKey('faculties.id'), nullable = False)
+    quick = Column(Boolean, nullable = False, default = False)
     created_at = Column(DateTime(timezone = True), nullable = False,
                         server_default = func.now())
     last_session = Column(DateTime(timezone = True), nullable = False,
