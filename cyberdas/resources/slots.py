@@ -97,12 +97,18 @@ class Item:
         resp.status = falcon.HTTP_200
 
 
-mail_args = {
+reserve_mail_args = {
     'sender': 'notify',
     'subject': 'Запись в очередь',
     'template': 'slot_reserve',
     'transaction': 'queues/{queueName}/slots/{slotId}/reserve',
     'expires': False
+}
+
+delete_mail_args = {
+    'sender': 'notify',
+    'subject': 'Отмена записи в очередь',
+    'template': 'slot_unreserve'
 }
 
 
@@ -116,7 +122,7 @@ def send_notify_reserve(req, resp, resource):
     if resp.status == falcon.HTTP_201:
         dbses = req.context.session
         uid = req.context.user['uid']
-        mail_sender = resource.mail
+        mail_sender = resource.reserve_mail
 
         user = dbses.query(User).filter_by(id = uid).first()
         email = user.email
@@ -128,12 +134,31 @@ def send_notify_reserve(req, resp, resource):
                          transaction_url = transaction_url)
 
 
+def send_notify_delete(req, resp, resource):
+    '''
+    Отправляет уведомление об отмене записи в очередь.
+    '''
+    if resp.status == falcon.HTTP_204:
+        dbses = req.context.session
+        uid = req.context.user['uid']
+        mail_sender = resource.delete_mail
+
+        user = dbses.query(User).filter_by(id = uid).first()
+        queue = dbses.query(Queue).filter_by(name = resp.context['queueName']).first() # noqa
+
+        template_data = {'queue_title': queue.title.lower(),
+                         'slot_date': format_time(resp.context['slot_date'])}
+        mail_sender.send(user.email, req.context.logger,
+                         template_data = template_data)
+
+
 class Reserve:
 
     auth = {'disabled': 1}
 
     def __init__(self, mail_factory: MailFactory):
-        self.mail = mail_factory.new_transaction(**mail_args)
+        self.reserve_mail = mail_factory.new_transaction(**reserve_mail_args)
+        self.delete_mail = mail_factory.new_template(**delete_mail_args)
 
     def on_get(self, req, resp, queueName, slotId):
         '''
@@ -208,6 +233,7 @@ class Reserve:
         resp.status = falcon.HTTP_201
 
     @falcon.before(auth_on_token('notify'))
+    @falcon.after(send_notify_delete)
     def on_delete(self, req, resp, queueName, slotId):
         '''
         Убирает резерв слота. Не позволяет убрать резерв со слотов, которые
@@ -229,6 +255,7 @@ class Reserve:
         if slot is None:
             resp.status = falcon.HTTP_404
             return
+        resp.context['slot_date'] = slot.time
 
         # Проверяем, вдруг слот свободен
         if slot.user_id is None:
@@ -251,3 +278,4 @@ class Reserve:
         slot.user_id = None
         log.info(f"[БРОНЬ УДАЛЕНА] {info}")
         resp.status = falcon.HTTP_204
+        resp.context['queueName'] = queueName
