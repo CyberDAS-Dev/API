@@ -1,7 +1,9 @@
 import re
 import smtplib
 import ssl
+from os import path
 
+from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from itsdangerous import URLSafeTimedSerializer, BadData
@@ -24,7 +26,7 @@ class Mail(object):
         if self.mail_expiry is not None:
             self.mail_expiry = int(self.mail_expiry)
 
-    def send(self, to, subject, content, log):
+    def send(self, to, subject, content, log, files = None):
         '''
         Отправляет письмо на указанный адрес.
 
@@ -37,6 +39,9 @@ class Mail(object):
                 версию письма, при этом они могут являться списками из контента.
 
             log(необходимо): логгер, позволяющий выводить сообщения об ошибках.
+
+            files(опционально): массив названий файлов, которые нужно прикрепить
+                к письму.
         '''
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
@@ -46,6 +51,11 @@ class Mail(object):
         html = MIMEText(content['html'], 'html')
         msg.attach(plain)
         msg.attach(html)
+        for f in files or []:
+            with open(f, "rb") as file:
+                part = MIMEApplication(file.read(), Name = path.basename(f))
+            part['Content-Disposition'] = 'attachment; filename="%s"' % path.basename(f) # noqa
+            msg.attach(part)
         try:
             context = ssl.SSLContext(ssl.PROTOCOL_TLS)
             server = smtplib.SMTP(self.smtp_server, self.smtp_port)
