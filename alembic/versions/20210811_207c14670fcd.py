@@ -25,8 +25,8 @@ def upgrade():
     sa.Column('title', sa.Text(), nullable=False),
     sa.Column('description', sa.Text(), nullable=False),
     sa.Column('duration', sa.Integer(), nullable=False),
-    sa.Column('waterfall', sa.Boolean(), nullable=False),
-    sa.Column('only_once', sa.Boolean(), nullable=False),
+    sa.Column('waterfall', sa.Boolean(), server_default='false', nullable=False),
+    sa.Column('only_once', sa.Boolean(), server_default='false', nullable=False),
     sa.PrimaryKeyConstraint('name', name=op.f('pk_queues'))
     )
     op.create_table('slots',
