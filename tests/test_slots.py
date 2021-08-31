@@ -15,7 +15,8 @@ def queueDB(defaultDB):
     '''
     living = Queue(
         name = 'living2021', title = 'Заселение 2021', duration = 5,
-        description = 'Заселение 2021', waterfall = False, only_once = True
+        description = 'Заселение 2021', waterfall = False,
+        only_one_active = False, only_once = True
     )
     living_slots = [Slot(queue_name = 'living2021', id = x,
                     time = (datetime.now() + timedelta(minutes = x)))
@@ -23,7 +24,8 @@ def queueDB(defaultDB):
 
     music = Queue(
         name = 'music', title = 'Музкомната', duration = 5,
-        description = 'Музкомната', waterfall = True, only_once = False
+        description = 'Музкомната', waterfall = True,
+        only_one_active = True, only_once = False
     )
     base = datetime.now() - timedelta(days = 1)
     datetime_range = [base + timedelta(days = x) for x in range(10)]
@@ -221,3 +223,19 @@ class TestReserve:
         a_client.simulate_delete(URI)
         resp = a_client.simulate_post(URI.replace('/2/', '/3/'))
         assert resp.status == falcon.HTTP_201
+
+    def test_only_one_active(self, a_client, queueDB):
+        '''
+        В очередь с флагом only_one_active можно иметь только одну предстоящую
+        запись
+        '''
+        resp = a_client.simulate_post(self.URI.replace('/2/', '/3/'))
+        assert resp.status == falcon.HTTP_201
+        resp = a_client.simulate_post(self.URI.replace('/2/', '/4/'))
+        assert resp.status == falcon.HTTP_403
+
+        with patch('cyberdas.resources.slots.datetime') as mock_datetime:
+            mock_datetime.now.return_value = datetime.now() + timedelta(days = 4) # noqa
+
+            resp = a_client.simulate_post(self.URI.replace('/2/', '/8/'))
+            assert resp.status == falcon.HTTP_201
