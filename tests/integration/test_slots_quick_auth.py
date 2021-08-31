@@ -11,6 +11,7 @@ from cyberdas.models import Queue, Slot
 
 URI = '/queues/music/slots/2/reserve'
 delete_mock = MagicMock()
+tm_mail_mock = MagicMock()
 t_mail_mock = MagicMock()
 smtp_mock = MagicMock()
 
@@ -96,3 +97,16 @@ def test_email_link_works(a_client, client, queueDB):
     with queueDB.session as dbses:
         slot = dbses.query(Slot).filter_by(queue_name = 'music', id = 2).first()
         assert slot.user_id is None
+
+
+@patch('cyberdas.services.mail.TemplateMail.send', new = tm_mail_mock)
+def test_delete_email_sent(a_client, queueDB):
+    '''
+    После отмены записи пользователю отправляется уведомительное письмо
+    '''
+    resp = a_client.simulate_post(URI)
+    assert resp.status == falcon.HTTP_201
+    resp = a_client.simulate_delete(URI)
+    assert resp.status == falcon.HTTP_204
+    tm_mail_mock.assert_called_with(environ['REGISTERED_USER_EMAIL'], ANY,
+                                    template_data = ANY)
