@@ -25,21 +25,10 @@ jobs:
               .replace('DB_USER', '"'${{ secrets.DB_USER_TEST }}'"')\
               .replace('DB_PASS', '"'${{ secrets.DB_PASS_TEST }}'"')\
               .replace('DB_NAME', '"'${{ secrets.DB_NAME_TEST }}'"')\
-              .replace('SEC_SIGNUP', '"'${{ secrets.SEC_SIGNUP_TEST }}'"')\
-              .replace('SEC_AUTH', '"'${{ secrets.SEC_AUTH_TEST }}'"')\
-              .replace('SALT_SIGNUP', '"'${{ secrets.SALT_SIGNUP_TEST }}'"')\
-              .replace('EMAIL_FROM', '"'${{ secrets.EMAIL_FROM }}'"')\
-              .replace('EMAIL_SERVER', '"'${{ secrets.EMAIL_SERVER }}'"')\
               .replace('EMAIL_PORT', '"'${{ secrets.EMAIL_PORT }}'"')\
-              .replace('EMAIL_LOGIN', '"'${{ secrets.EMAIL_LOGIN }}'"')\
-              .replace('EMAIL_PASS', '"'${{ secrets.EMAIL_PASS }}'"')
               
               f.seek(0)
               f.write(d)
-              f.write('''
-          [cdci]
-          build = test
-          ''')
               f.truncate()
               f.close()"
       - name: Install app
