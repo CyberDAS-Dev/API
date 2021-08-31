@@ -5,7 +5,7 @@ import falcon
 from falcon.media.validators import jsonschema
 
 from cyberdas.models import User
-from cyberdas.services import TransactionMailFactory
+from cyberdas.services import MailFactory
 
 
 mail_args = {
@@ -24,8 +24,8 @@ class Sender:
     with open(path.abspath('cyberdas/static/signup_schema.json'), 'r') as f:
         signup_schema = json.load(f)
 
-    def __init__(self, mail_factory: TransactionMailFactory):
-        self.mail = mail_factory.new(**mail_args)
+    def __init__(self, mail_factory: MailFactory):
+        self.mail = mail_factory.new_transaction(**mail_args)
 
     # для протокола: jsonschema ловит некорректные эмэйлы и выкидывает 400-ые
     @jsonschema.validate(signup_schema)
@@ -65,8 +65,8 @@ class Validator:
 
     auth = {'disabled': 1}
 
-    def __init__(self, mail_factory: TransactionMailFactory):
-        self.mail = mail_factory.new(**mail_args)
+    def __init__(self, mail_factory: MailFactory):
+        self.mail = mail_factory.new_transaction(**mail_args)
 
     def on_get(self, req: falcon.Request, resp: falcon.Response):
         '''

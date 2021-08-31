@@ -9,13 +9,13 @@ from .resources import (
     logout,
 )
 from .services import (
-    TransactionMailFactory,
+    MailFactory,
     SessionManager,
 )
 
 # Инициализация компонентов
 cfg = get_cfg()
-mail_factory = TransactionMailFactory(cfg)
+mail_factory = MailFactory(cfg)
 session_manager = SessionManager()
 ###
 

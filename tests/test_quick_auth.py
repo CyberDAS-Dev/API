@@ -4,7 +4,8 @@ from unittest.mock import MagicMock, patch
 
 import falcon
 
-from cyberdas.services import Mail, quick_auth
+from cyberdas.services import quick_auth
+from cyberdas.services.mail import Mail
 from cyberdas.models import User
 from cyberdas.config import get_cfg
 
