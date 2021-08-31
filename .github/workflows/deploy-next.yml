@@ -25,20 +25,21 @@ jobs:
               .replace('DB_PASS', '"'${{ secrets.DB_PASS_NEXT }}'"')\
               .replace('DB_NAME', '"'${{ secrets.DB_NAME_NEXT }}'"')\
               .replace('SEC_SIGNUP', '"'${{ secrets.SEC_SIGNUP_NEXT }}'"')\
+              .replace('SEC_NOTIFY', '"'${{ secrets.SEC_NOTIFY_NEXT }}'"')\
               .replace('SEC_AUTH', '"'${{ secrets.SEC_AUTH_NEXT }}'"')\
               .replace('SALT_SIGNUP', '"'${{ secrets.SALT_SIGNUP_NEXT }}'"')\
-              .replace('EMAIL_FROM', '"'${{ secrets.EMAIL_FROM }}'"')\
+              .replace('SALT_NOTIFY', '"'${{ secrets.SALT_NOTIFY_NEXT }}'"')\
               .replace('EMAIL_SERVER', '"'${{ secrets.EMAIL_SERVER }}'"')\
               .replace('EMAIL_PORT', '"'${{ secrets.EMAIL_PORT }}'"')\
-              .replace('EMAIL_LOGIN', '"'${{ secrets.EMAIL_LOGIN }}'"')\
-              .replace('EMAIL_PASS', '"'${{ secrets.EMAIL_PASS }}'"')
+              .replace('SIGNUP_EMAIL_FROM', '"'${{ secrets.SIGNUP_EMAIL_FROM }}'"')\
+              .replace('SIGNUP_EMAIL_LOGIN', '"'${{ secrets.SIGNUP_EMAIL_LOGIN }}'"')\
+              .replace('SIGNUP_EMAIL_PASS', '"'${{ secrets.SIGNUP_EMAIL_PASS }}'"')
+              .replace('NOTIFY_EMAIL_FROM', '"'${{ secrets.NOTIFY_EMAIL_FROM }}'"')\
+              .replace('NOTIFY_EMAIL_LOGIN', '"'${{ secrets.NOTIFY_EMAIL_LOGIN }}'"')\
+              .replace('NOTIFY_EMAIL_PASS', '"'${{ secrets.NOTIFY_EMAIL_PASS }}'"')
 
               f.seek(0)
               f.write(d)
-              f.write('''
-          [cdci]
-          build = next
-          ''')
               f.truncate()
               f.close()"
       - name: Install app
