@@ -72,7 +72,7 @@ class User(Base):
     surname = Column(Text, nullable = False)
     patronymic = Column(Text, nullable = True)
     faculty_id = Column(Integer, ForeignKey('faculties.id'), nullable = False)
-    quick = Column(Boolean, nullable = False, default = False)
+    quick = Column(Boolean, nullable = False, server_default = 'false')
     created_at = Column(DateTime(timezone = True), nullable = False,
                         server_default = func.now())
     last_session = Column(DateTime(timezone = True), nullable = False,
