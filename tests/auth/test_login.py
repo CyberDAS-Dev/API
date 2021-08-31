@@ -5,7 +5,7 @@ from os import environ
 import falcon
 
 from cyberdas.models import Session
-from cyberdas.services import TransactionMail
+from cyberdas.services.mail import TransactionMail
 from cyberdas.config import get_cfg
 
 cfg = get_cfg()
@@ -18,7 +18,7 @@ SES_LENGTH = int(get_cfg()['internal']['session.length'])
 smtp_mock = MagicMock()
 
 
-@patch('cyberdas.services.TransactionMail.send', new = smtp_mock)
+@patch('cyberdas.services.mail.TransactionMail.send', new = smtp_mock)
 class TestSender:
 
     URI = '/account/login'

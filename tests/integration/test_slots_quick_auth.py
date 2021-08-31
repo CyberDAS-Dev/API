@@ -54,7 +54,7 @@ def test_delete_from_get(client):
     delete_mock.assert_called_once()
 
 
-@patch('cyberdas.services.TransactionMail.send', new = t_mail_mock)
+@patch('cyberdas.services.mail.TransactionMail.send', new = t_mail_mock)
 def test_email_sent(a_client, queueDB):
     '''
     После успешной записи пользователю отправляется уведомительное письмо,
@@ -69,7 +69,7 @@ def test_email_sent(a_client, queueDB):
     )
 
 
-@patch('cyberdas.services.Mail.send', new = smtp_mock)
+@patch('cyberdas.services.mail.Mail.send', new = smtp_mock)
 def test_email_link_works(a_client, client, queueDB):
     '''
     Проверка того, что ссылка в уведомительноп письме при брони слота позволяет

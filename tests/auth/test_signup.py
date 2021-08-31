@@ -5,7 +5,7 @@ from os import environ
 import falcon
 
 from cyberdas.models import User
-from cyberdas.services import TransactionMail
+from cyberdas.services.mail import TransactionMail
 from cyberdas.config import get_cfg
 
 USER_EMAIL = 'haha@mail.com'
@@ -17,7 +17,7 @@ cfg = get_cfg()
 smtp_mock = MagicMock()
 
 
-@patch('cyberdas.services.TransactionMail.send', new = smtp_mock)
+@patch('cyberdas.services.mail.TransactionMail.send', new = smtp_mock)
 class TestSender:
 
     URI = '/account/signup'

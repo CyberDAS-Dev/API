@@ -8,7 +8,7 @@ from unittest.mock import MagicMock
 
 from itsdangerous import URLSafeTimedSerializer
 
-from cyberdas.services import Mail, TransactionMail
+from cyberdas.services.mail import Mail, TransactionMail
 from cyberdas.config import get_cfg
 
 HOSTNAME = '127.0.0.1'
