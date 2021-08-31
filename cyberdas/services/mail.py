@@ -55,6 +55,7 @@ class Mail(object):
             server.login(self.account_login, self.account_password)
             server.sendmail(self.sent_from, to, msg.as_string())
             server.close()
+            log.info("[ПИСЬМО] email %s, subject %s" % (to, subject))
         except Exception as e:
             log.error(e)
             raise e
