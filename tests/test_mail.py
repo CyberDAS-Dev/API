@@ -125,7 +125,8 @@ class TestMail:
     @pytest.fixture
     def messages(self, mail, smtpd_tls):
         'Возвращает сообщения, посланные модулем'
-        mail.send(self.to, self.subject, self.content, MagicMock())
+        mail.send(self.to, self.subject, self.content, MagicMock(),
+                  files = ['./LICENSE'])
         yield smtpd_tls.messages
 
     def test_email_sent(self, messages):
