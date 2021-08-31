@@ -413,7 +413,10 @@ paths:
       summary: Занять выбранный слот в выбранной очереди
       tags:
         - Очереди
-      
+
+      requestBody:
+        $ref: '#/components/requestBodies/QuickAuth'
+
       responses:
         '201':
           description: Успешная запись
@@ -436,6 +439,9 @@ paths:
         # Нужно либо cookieAuth, либо adminAuth
         - cookieAuth: []
         - adminAuth: []
+
+      parameters:
+        - $ref: '#/components/parameters/quickAuthToken'
 
       responses:
         '204':
@@ -583,6 +589,16 @@ components:
       schema:
         type: integer
         example: 23
+    quickAuthToken:
+      name: token
+      in: query
+      required: false
+      allowEmptyValue: false
+      description: Подписанный токен, позволяющий аутентифицироваться на 
+        некоторых эндпоинтах без процедуры логина и регистрации
+      schema:
+        type: string
+        format: byte
 
 
   requestBodies:
@@ -621,6 +637,29 @@ components:
             properties:
               email:
                 type: string
+            required:
+              - email
+
+    QuickAuth:
+      description: JSON-объект, содержащий адрес почты для логина или все 
+        данные, необходимые для регистрации. Позволяет пропустить регистрацию 
+        и использовать некоторые защищенные эндпоинты без неё.
+      required: false
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              name:
+                type: string
+              surname:
+                type: string
+              patronymic:
+                type: string
+              faculty_id:
+                type: integer
             required:
               - email
     
