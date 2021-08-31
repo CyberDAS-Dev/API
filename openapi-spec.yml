@@ -414,6 +414,9 @@ paths:
       summary: Занять выбранный слот в выбранной очереди
       tags:
         - Очереди
+      security:
+      - cookieAuth: []
+        csrfToken: []
 
       requestBody:
         $ref: '#/components/requestBodies/QuickAuth'
@@ -719,6 +722,11 @@ components:
       type: apiKey
       in: cookie
       name: SESSIONID
+
+    csrfToken:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
 
     adminAuth:
       type: apiKey
