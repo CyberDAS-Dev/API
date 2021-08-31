@@ -16,6 +16,8 @@ with open(path.abspath('cyberdas/static/login_schema.json'), 'r') as f:
 
 with open(path.abspath('cyberdas/static/signup_schema.json'), 'r') as f:
     signup_schema = json.load(f)['definitions']['SignupRequest']
+    # на случай если эндпоинт сам принимает какой-то POST запрос:
+    signup_schema['additionalProperties'] = True
 
 cfg = get_cfg()
 
