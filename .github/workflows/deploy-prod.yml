@@ -3,18 +3,24 @@ name: deploy-prod
 on:
   release:
     branches: [ main ]
-    types: [ released ]
+    types: [ released, deleted ]
+    # Так как в начале воркфлоу фетчится последний релиз, то триггер
+    # на `deleted` позволить 'бесплатно' роллбэчиться
 
 jobs:
+
   build:
     runs-on: [self-hosted, linux, X64]
-    defaults:
-      run:
-        working-directory: /usr/share/cyberdas
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Get last released version
+        id: lastver
+        uses: pozetroninc/github-action-get-latest-release@v0.5.0
         with:
+          repository: ${{ github.repository }}
+          excludes: prerelease, draft
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.lastver.outputs.release }}
           path: prod
       - name: Set secrets
         working-directory: prod
