@@ -8,6 +8,7 @@ info:
 
 servers:
   - url: https://api.cyberdas.net/v1
+  - url: https://api.cyberdas.net/next
 
 tags: 
   - name: Аутентификация
