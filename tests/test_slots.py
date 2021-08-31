@@ -1,6 +1,7 @@
 import pytest
 import json
 from datetime import datetime, timedelta, date
+from unittest.mock import MagicMock, patch
 
 import falcon
 
@@ -141,6 +142,7 @@ class TestItem:
         assert 'free' in valid_get
 
 
+@patch('cyberdas.services.TransactionMail.send', new = MagicMock())
 class TestReserve:
 
     URI = '/queues/music/slots/2/reserve'
