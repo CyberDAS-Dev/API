@@ -162,6 +162,7 @@ class Reserve:
         dbses = req.context.session
         log = req.context.logger
         user = req.context.user
+        info = "uid %s, queueName %s, slotId %s" % (user['uid'], queueName, slotId) # noqa
 
         slot = dbses.query(Slot).filter_by(queue_name = queueName,
                                            id = slotId).first()
@@ -172,14 +173,12 @@ class Reserve:
 
         # Проверяем, не пытается ли пользователь забронировать `вчерашний` слот
         if slot.time < datetime.now():
-            log.debug("[ИСТЁКШИЙ СЛОТ] uid %s, queueName %s, slotId %s"
-                      % (user['uid'], queueName, slotId))
+            log.debug(f"[ИСТЁКШИЙ СЛОТ] {info}")
             raise falcon.HTTPForbidden(description = 'Слот истёк')
 
         # Проверяем, что слот свободен
         if slot.user_id is not None:
-            log.debug("[ЗАНЯТЫЙ СЛОТ] uid %s, queueName %s, slotId %s"
-                      % (user['uid'], queueName, slotId))
+            log.debug(f"[ЗАНЯТЫЙ СЛОТ] {info}")
             raise falcon.HTTPForbidden(description = 'Слот занят')
 
         queue = dbses.query(Queue).filter_by(name = queueName).first()
@@ -190,8 +189,7 @@ class Reserve:
         # Для `only_once` очередей проверяем, что пользователь не имеет записей
         if queue.only_once:
             if len(user_slots.all()) > 0:
-                log.debug("[ONLY ONCE] uid %s, queueName %s, slotId %s"
-                          % (user['uid'], queueName, slotId))
+                log.debug(f"[ONLY ONCE] {info}")
                 raise falcon.HTTPForbidden(
                     description = 'Вы уже записались в эту очередь'
                 )
@@ -200,15 +198,13 @@ class Reserve:
         if queue.only_one_active:
             active_slots = user_slots.filter(Slot.time > datetime.now())
             if len(active_slots.all()) > 0:
-                log.debug("[ONLY ONE ACTIVE] uid %s, queueName %s, slotId %s"
-                          % (user['uid'], queueName, slotId))
+                log.debug(f"[ONLY ONE ACTIVE] {info}")
                 raise falcon.HTTPForbidden(
                     description = 'У вас же есть предстоящая запись в эту очередь' # noqa
                 )
 
         slot.user_id = user['uid']
-        log.info("[БРОНЬ СОЗДАНА] uid %s, queueName %s, slotId %s"
-                 % (user['uid'], queueName, slotId))
+        log.info(f"[БРОНЬ СОЗДАНА] {info}")
         resp.status = falcon.HTTP_201
 
     @falcon.before(auth_on_token('notify'))
@@ -226,6 +222,7 @@ class Reserve:
         dbses = req.context.session
         log = req.context.logger
         user = req.context.user
+        info = "uid %s, queueName %s, slotId %s" % (user['uid'], queueName, slotId) # noqa
 
         slot = dbses.query(Slot).filter_by(queue_name = queueName,
                                            id = slotId).first()
@@ -235,26 +232,22 @@ class Reserve:
 
         # Проверяем, вдруг слот свободен
         if slot.user_id is None:
-            log.debug("[СВОБОДНЫЙ СЛОТ] uid %s, queueName %s, slotId %s"
-                      % (user['uid'], queueName, slotId))
+            log.debug(f"[СВОБОДНЫЙ СЛОТ] {info}")
             resp.status = falcon.HTTP_404
             return
 
         # Пользователь не может разбронировать чужой слот
         if slot.user_id != user['uid']:
-            log.debug("[ЗАНЯТЫЙ СЛОТ] uid %s, queueName %s, slotId %s"
-                      % (user['uid'], queueName, slotId))
+            log.debug(f"[ЗАНЯТЫЙ СЛОТ] {info}")
             raise falcon.HTTPForbidden(
                 description = 'Слот занят другим пользователем'
             )
 
         # Проверяем, что пользователь не пытается разбронировать истёкший слот
         if slot.time < datetime.now():
-            log.debug("[ИСТЁКШИЙ СЛОТ] uid %s, queueName %s, slotId %s"
-                      % (user['uid'], queueName, slotId))
+            log.debug(f"[ИСТЁКШИЙ СЛОТ] {info}")
             raise falcon.HTTPForbidden(description = 'Слот истёк')
 
         slot.user_id = None
-        log.info("[БРОНЬ УДАЛЕНА] uid %s, queueName %s, slotId %s"
-                 % (user['uid'], queueName, slotId))
+        log.info(f"[БРОНЬ УДАЛЕНА] {info}")
         resp.status = falcon.HTTP_204
