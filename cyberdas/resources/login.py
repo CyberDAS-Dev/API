@@ -60,7 +60,6 @@ class Sender:
         data['uid'] = user.id
 
         self.mail.send(req, data['email'], data)
-        log.info('[ПИСЬМО][ЛОГИН] email %s' % data['email'])
         resp.status = falcon.HTTP_202
 
 

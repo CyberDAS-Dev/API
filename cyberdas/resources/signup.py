@@ -58,7 +58,6 @@ class Sender:
             )
 
         self.mail.send(req, data['email'], data)
-        log.info('[ПИСЬМО][РЕГИСТРАЦИЯ] email %s' % data['email'])
         resp.status = falcon.HTTP_202
 
 
