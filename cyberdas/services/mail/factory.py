@@ -1,4 +1,5 @@
 from .mail import Mail
+from .template_mail import TemplateMail
 from .transaction_mail import TransactionMail
 
 
@@ -13,6 +14,9 @@ class MailFactory:
 
     def new_simple(self, sender):
         return Mail(self.cfg, sender)
+
+    def new_template(self, sender, subject, template):
+        return TemplateMail(self.cfg, sender, subject, template)
 
     def new_transaction(self, sender, subject, template, transaction, expires):
         return TransactionMail(self.cfg, sender, subject, template,
