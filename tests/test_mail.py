@@ -1,3 +1,4 @@
+from cyberdas.services.mail.template_mail import TemplateMail
 import os
 import re
 import base64
@@ -140,6 +141,29 @@ class TestMail:
         assert len(smtpd.messages) == 0
 
 
+class TestTemplateMail:
+
+    to = 'user@das.net'
+    trans_url = 'juzx!32jiows'
+
+    @pytest.fixture(scope = 'class')
+    def mail(self, mock_smtp_cfg):
+        yield TemplateMail(mock_smtp_cfg, SENDER, 'Hello', 'signup')
+
+    @pytest.fixture
+    def messages(self, mail, smtpd_tls):
+        mail.send(self.to, MagicMock(),
+                  template_data = {'transaction_url': self.trans_url})
+        yield smtpd_tls.messages
+
+    def test_template_rendered(self, messages):
+        'Шаблон письма должен быть зарендерится перед отправкой'
+        payload = messages[0].get_payload()[0].get_payload()
+        payload = base64.b64decode(payload.encode('utf-8')).decode('utf-8')
+        url = re.findall(rf'{self.trans_url}', payload)[0]
+        assert url is not None
+
+
 class TestTransactionMail:
 
     email = 'lol@das.net'
@@ -195,14 +219,6 @@ class TestTransactionMail:
         mail.send(req, self.email, {'email': self.email},
                   transaction_url = self.fake_transaction)
         yield smtpd_tls.messages
-
-    def test_email_sent(self, messages):
-        'Проверяет, что письмо было послано и дошло'
-        assert len(messages) == 1
-
-    def test_email_sent_next(self, messages_next):
-        'Проверяет, что письмо было послано и дошло (с переадресацией `next`)'
-        assert len(messages_next) == 1
 
     def test_email_contains_token(self, messages):
         'Проверяет наличие токена в письме'

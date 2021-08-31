@@ -1,18 +1,14 @@
-from cyberdas.utils.load_template import load_template
-from .mail import Mail
+from .template_mail import TemplateMail
 
 
-class TransactionMail(Mail):
+class TransactionMail(TemplateMail):
     '''
     Класс, позволяющий отправлять транзакционные эмэйлы с подписанными данными.
     '''
 
     def __init__(self, cfg, sender, subject, template, frontend, transaction, expires): # noqa
-        super().__init__(cfg, sender)
-        self.sep = ';'  # используется как разделитель при сериализации
+        super().__init__(cfg, sender, subject, template)
         self.frontend_url = frontend
-        self.subject = subject
-        self.template = template
         self.transaction_url = transaction
         self.expires = expires
 
@@ -49,16 +45,11 @@ class TransactionMail(Mail):
         else:
             url = f'{backend_url}?token={token}'
 
-        # Рендерим шаблоны письма (HTML и текстовый)
-        html_template = load_template(self.template).render(transaction_url = url, **template_data) # noqa
-        plain_template = load_template(self.template+'_plain').render(transaction_url = url, **template_data) # noqa
-
         # Отправляем письмо
         super().send(
             to = to,
-            subject = self.subject,
-            content = {'html': html_template, 'plain': plain_template},
-            log = req.context.logger
+            logger = req.context.logger,
+            template_data = {'transaction_url': url, **template_data}
         )
         return url
 
