@@ -33,7 +33,7 @@ jobs:
               .replace('EMAIL_PORT', '"'${{ secrets.EMAIL_PORT }}'"')\
               .replace('SIGNUP_EMAIL_FROM', '"'${{ secrets.SIGNUP_EMAIL_FROM }}'"')\
               .replace('SIGNUP_EMAIL_LOGIN', '"'${{ secrets.SIGNUP_EMAIL_LOGIN }}'"')\
-              .replace('SIGNUP_EMAIL_PASS', '"'${{ secrets.SIGNUP_EMAIL_PASS }}'"')
+              .replace('SIGNUP_EMAIL_PASS', '"'${{ secrets.SIGNUP_EMAIL_PASS }}'"')\
               .replace('NOTIFY_EMAIL_FROM', '"'${{ secrets.NOTIFY_EMAIL_FROM }}'"')\
               .replace('NOTIFY_EMAIL_LOGIN', '"'${{ secrets.NOTIFY_EMAIL_LOGIN }}'"')\
               .replace('NOTIFY_EMAIL_PASS', '"'${{ secrets.NOTIFY_EMAIL_PASS }}'"')
