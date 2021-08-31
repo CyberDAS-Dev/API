@@ -12,7 +12,7 @@ from cyberdas.services import SessionManager
 
 mail_args = {
     'sender': 'signup',
-    'subject': 'Вход в аккаунт на CyberDAS',
+    'subject': 'Вход в аккаунт',
     'template': 'login',
     'transaction': 'account/login/validate',
     'expires': True

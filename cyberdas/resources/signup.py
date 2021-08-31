@@ -10,7 +10,7 @@ from cyberdas.services import MailFactory
 
 mail_args = {
     'sender': 'signup',
-    'subject': 'Регистрация на CyberDAS',
+    'subject': 'Регистрация',
     'template': 'signup',
     'transaction': 'account/signup/validate',
     'expires': True
