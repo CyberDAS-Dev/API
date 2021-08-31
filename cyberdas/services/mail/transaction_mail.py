@@ -1,19 +1,5 @@
-from ..utils.load_template import load_template
+from cyberdas.utils.load_template import load_template
 from .mail import Mail
-
-
-class TransactionMailFactory:
-    '''
-    Класс-фабрика, создающий новых отправителей транзакционных писем.
-    '''
-
-    def __init__(self, cfg):
-        self.cfg = cfg
-        self.frontend = cfg['internal']['frontend.url']
-
-    def new(self, sender, subject, template, transaction, expires):
-        return TransactionMail(self.cfg, sender, subject, template,
-                               self.frontend, transaction, expires)
 
 
 class TransactionMail(Mail):

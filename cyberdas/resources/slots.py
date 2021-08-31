@@ -5,7 +5,7 @@ from sqlalchemy import Date, cast
 
 from cyberdas.models import Slot, Queue, User
 from cyberdas.services import (
-    TransactionMailFactory,
+    MailFactory,
     auth_on_post, auth_on_token
 )
 from cyberdas.utils.format_time import format_time
@@ -132,8 +132,8 @@ class Reserve:
 
     auth = {'disabled': 1}
 
-    def __init__(self, mail_factory: TransactionMailFactory):
-        self.mail = mail_factory.new(**mail_args)
+    def __init__(self, mail_factory: MailFactory):
+        self.mail = mail_factory.new_transaction(**mail_args)
 
     def on_get(self, req, resp, queueName, slotId):
         '''

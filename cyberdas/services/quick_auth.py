@@ -7,7 +7,7 @@ from jsonschema.exceptions import ValidationError
 import falcon
 
 from cyberdas.models import User
-from cyberdas.services import Mail
+from cyberdas.services.mail import Mail
 from cyberdas.config import get_cfg
 
 with open(path.abspath('cyberdas/static/login_schema.json'), 'r') as f:
