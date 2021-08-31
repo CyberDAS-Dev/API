@@ -24,7 +24,8 @@ class CookieSerializable:
             cookie_params(dict, необходим): словарь с параметрами, используемыми
                 для формирования куки
         '''
-        safe_params = {'secure': True, 'http_only': True, 'same_site': 'Strict'}
+        safe_params = {'secure': True, 'http_only': True,
+                       'same_site': 'Strict', 'path': '/'}
         cookie_params.update(safe_params)
         return cookie_params
 
