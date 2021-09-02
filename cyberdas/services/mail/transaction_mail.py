@@ -38,12 +38,11 @@ class TransactionMail(TemplateMail):
 
         # Если клиент предоставил 'next', то перенаправляем его на фронтенд
         next = req.get_param('next')
-        backend_url = f'{req.forwarded_prefix}/{_transaction_url}'
         if next is not None:
-            url = f'{self.frontend_url}/{next}?token={token}&backend={backend_url}' # noqa
+            url = f'{self.frontend_url}/{next}?token={token}&backend={_transaction_url}' # noqa
         # Иначе, отправляем клиента сразу на валидационный эндпоинт на бэкенде
         else:
-            url = f'{backend_url}?token={token}'
+            url = f'{req.forwarded_prefix}/{_transaction_url}?token={token}'
 
         # Отправляем письмо
         super().send(

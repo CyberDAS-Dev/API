@@ -233,7 +233,7 @@ class TestTransactionMail:
     def test_email_contains_backend_ref_next(self, messages_next):
         'Проверяет наличие ссылки на бэкенд в письме (с переадресацией `next`)'
         url = self.extract_url(messages_next[0], True)
-        assert f'backend={self.prefix}/{self.backend_next}' in url
+        assert f'backend={self.backend_next}' in url
 
     def test_email_token_validity(self, mail, messages):
         'Проверяет валидность токена в письме'
