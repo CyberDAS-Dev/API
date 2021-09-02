@@ -58,13 +58,7 @@ def _get_or_add_user(req: falcon.Request, data: dict):
         raise falcon.HTTPUnauthorized()
 
     # При регистрации такого пользователя его нужно отметить галочкой quick
-    newUser = User(
-        email = data['email'],
-        name = data['name'], surname = data['surname'],
-        patronymic = (data['patronymic'] if 'patronymic' in data.keys()
-                      else None),
-        faculty_id = data['faculty_id'], quick = True
-    )
+    newUser = User(**data, quick = True)
 
     dbses.add(newUser)
     dbses.flush()

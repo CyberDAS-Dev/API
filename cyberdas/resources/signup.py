@@ -98,13 +98,7 @@ class Validator:
             )
 
         # Добавление пользователя в базу данных
-        newUser = User(
-            email = data['email'],
-            name = data['name'], surname = data['surname'],
-            patronymic = (data['patronymic'] if 'patronymic' in data.keys()
-                          else None),
-            faculty_id = data['faculty_id']
-        )
+        newUser = User(**data)
 
         dbses.add(newUser)
         dbses.flush()

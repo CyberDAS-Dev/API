@@ -37,6 +37,9 @@ class User(Base):
             faculty_id - Integer
                 Хранит идентификатор факультета, на котором учится пользователя
 
+            course - Integer
+                Хранит текущий курс обучения пользователя
+
             quick - Boolean
                 Флаг, сигнализирующий о том, что пользователь не проходил полной
                 процедуры регистрации, а был зарегистрирован с помощью
@@ -72,6 +75,7 @@ class User(Base):
     surname = Column(Text, nullable = False)
     patronymic = Column(Text, nullable = True)
     faculty_id = Column(Integer, ForeignKey('faculties.id'), nullable = False)
+    course = Column(Integer, nullable = True)
     quick = Column(Boolean, nullable = False, server_default = 'false')
     created_at = Column(DateTime(timezone = True), nullable = False,
                         server_default = func.now())
