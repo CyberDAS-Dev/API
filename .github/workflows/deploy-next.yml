@@ -36,7 +36,8 @@ jobs:
               .replace('SIGNUP_EMAIL_PASS', '"'${{ secrets.SIGNUP_EMAIL_PASS }}'"')\
               .replace('NOTIFY_EMAIL_FROM', '"'${{ secrets.NOTIFY_EMAIL_FROM }}'"')\
               .replace('NOTIFY_EMAIL_LOGIN', '"'${{ secrets.NOTIFY_EMAIL_LOGIN }}'"')\
-              .replace('NOTIFY_EMAIL_PASS', '"'${{ secrets.NOTIFY_EMAIL_PASS }}'"')
+              .replace('NOTIFY_EMAIL_PASS', '"'${{ secrets.NOTIFY_EMAIL_PASS }}'"')\
+              .replace('FRONTEND_URL', '"'${{ secrets.FRONTEND_URL_NEXT }}'"')
 
               f.seek(0)
               f.write(d)
