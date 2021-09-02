@@ -50,7 +50,8 @@ setup(
     install_requires=requires,
     entry_points={
         'console_scripts': [
-            'initialize_db = cyberdas.scripts.initialize_db:main'
+            'initialize_db = cyberdas.scripts.initialize_db:main',
+            'send_mail = cyberdas.scripts.send_mail:main',
         ],
     },
 )
