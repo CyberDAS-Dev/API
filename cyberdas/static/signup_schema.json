@@ -21,6 +21,9 @@
                 },
                 "faculty_id": {
                     "type": "integer"
+                },
+                "course": {
+                    "type": "integer"
                 }
             },
             "required": [

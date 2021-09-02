@@ -474,21 +474,16 @@ components:
           type: string
         faculty:
           type: string
+        course:
+          type: integer
         createdAt:
           type: string
           format: date
-        email_verified:
-          type: boolean
-        verified:
-          type: boolean
       required:
         - id
         - name
         - surname
         - faculty
-        - createdAt
-        - email_verified
-        - verified
 
     Queue:
       type: object
@@ -625,6 +620,8 @@ components:
                 type: string
               faculty_id:
                 type: integer
+              course:
+                type: integer
             required:
               - email
               - name
@@ -663,6 +660,8 @@ components:
               patronymic:
                 type: string
               faculty_id:
+                type: integer
+              course:
                 type: integer
             required:
               - email
