@@ -225,7 +225,7 @@ class Reserve:
             if len(active_slots.all()) > 0:
                 log.debug(f"[ONLY ONE ACTIVE] {info}")
                 raise falcon.HTTPForbidden(
-                    description = 'У вас же есть предстоящая запись в эту очередь' # noqa
+                    description = 'У вас уже есть предстоящая запись в эту очередь' # noqa
                 )
 
         slot.user_id = user['uid']
