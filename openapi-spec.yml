@@ -46,13 +46,7 @@ paths:
       security: []  # доступно без аутентификации
 
       parameters:
-        - name: next
-          in: query
-          required: false
-          allowEmptyValue: false
-          description: Ресурс, на который должна вести ссылка из письма
-          schema:
-            type: string
+        - $ref: '#/components/parameters/emailNext'
 
       requestBody:
         $ref: '#/components/requestBodies/Signup'
@@ -108,13 +102,7 @@ paths:
       security: []   # доступно без аутентификации
 
       parameters:
-        - name: next
-          in: query
-          required: false
-          allowEmptyValue: false
-          description: Ресурс, на который должна вести ссылка из письма
-          schema:
-            type: string
+        - $ref: '#/components/parameters/emailNext'
 
       requestBody:
         $ref: '#/components/requestBodies/Login'
@@ -409,6 +397,7 @@ paths:
     parameters:
       - $ref: '#/components/parameters/queueName'
       - $ref: '#/components/parameters/slotId'
+      - $ref: '#/components/parameters/emailNext'
 
     post:
       summary: Занять выбранный слот в выбранной очереди
@@ -423,7 +412,9 @@ paths:
 
       responses:
         '201':
-          description: Успешная запись
+          description: Успешная запись. На вашу почту выслана копия талона.
+            Если ваши планы изменились, то вы можете отменить запись, пройдя
+            по ссылке из письма.
         '401':
           $ref: '#/components/responses/UnauthenticatedError'
         '403':
@@ -598,6 +589,15 @@ components:
       schema:
         type: string
         format: byte
+    emailNext:
+      name: next
+      in: query
+      required: false
+      allowEmptyValue: false
+      description: Параметр, который будучи указан, перенаправляет пользователя
+        из письма на {frontend}/{next}, а не обратно на API
+      schema:
+        type: string
 
 
   requestBodies:
