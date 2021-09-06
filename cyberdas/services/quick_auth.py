@@ -57,8 +57,10 @@ def _get_or_add_user(req: falcon.Request, data: dict):
     except ValidationError:
         raise falcon.HTTPUnauthorized()
 
-    # При регистрации такого пользователя его нужно отметить галочкой quick
-    newUser = User(**data, quick = True)
+    # При регистрации такого пользователя его нужно отметить галочкой quick, но
+    # перед этим нужно почистить данные, так как additionalProperties = true
+    clean_data = {k: data[k] for k in signup_schema['properties'] if k in data}
+    newUser = User(**clean_data, quick = True)
 
     dbses.add(newUser)
     dbses.flush()
