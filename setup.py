@@ -52,6 +52,7 @@ setup(
         'console_scripts': [
             'initialize_db = cyberdas.scripts.initialize_db:main',
             'send_mail = cyberdas.scripts.send_mail:main',
+            'dump_table = cyberdas.scripts.dump_table:main',
         ],
     },
 )
