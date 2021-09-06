@@ -77,9 +77,8 @@ class User(Base):
     faculty_id = Column(Integer, ForeignKey('faculties.id'), nullable = False)
     course = Column(Integer, nullable = True)
     quick = Column(Boolean, nullable = False, server_default = 'false')
-    created_at = Column(DateTime(timezone = True), nullable = False,
-                        server_default = func.now())
-    last_session = Column(DateTime(timezone = True), nullable = False,
+    created_at = Column(DateTime, nullable = False, server_default = func.now())
+    last_session = Column(DateTime, nullable = False,
                           server_default = func.now())
 
     faculty = relationship('Faculty', back_populates = 'population')

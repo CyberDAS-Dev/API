@@ -54,10 +54,7 @@ class Session(Base):
     csrf_token = Column(String(64), unique = True, nullable = False)
     user_agent = Column(Text, nullable = False)
     ip = Column(String(16), nullable = False)
-    expires = Column(DateTime(timezone = True), nullable = False)
-    created_at = Column(
-        DateTime(timezone = True), nullable = False,
-        server_default = func.now()
-    )
+    expires = Column(DateTime, nullable = False)
+    created_at = Column(DateTime, nullable = False, server_default = func.now())
 
     user = relationship('User', back_populates = 'sessions')
