@@ -29,7 +29,7 @@ tests_require = [
 
 setup(
     name='cyberdas',
-    version='1.0.0',
+    version='1.0.2',
     description='CyberDAS API',
     classifiers=[
         'Programming Language :: Python',
