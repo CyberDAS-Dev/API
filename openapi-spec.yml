@@ -2,7 +2,7 @@ openapi: '3.0.2'
 
 info:
   title: CyberDAS API
-  version: '0.5'
+  version: '0.6'
   contact:
     email: api@cyberdas.net
 
@@ -172,6 +172,39 @@ paths:
           description: Сессия успешно завершена.
         '401':
           $ref: '#/components/responses/UnauthenticatedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /account/ott:
+
+    post:
+      summary: Возвращает токен, позволяющий совершить одно действие без
+        предварительной регистрации.
+      tags:
+        - Аутентификация
+
+      requestBody:
+        $ref: '#/components/requestBodies/QuickAuth'
+
+      responses:
+        '201':
+          description: >
+            Успешная авторизация.
+            Ваш одноразовый токен указан в теле ответа. Он должен использоваться для совершения одного действия.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: WfF1szMUH.hiokx9AHFply.5L2xAOfjRkE
+                  token_type:
+                    type: string
+                    example: bearer
+                  expires_in:
+                    type: integer
+                    example: 100
         default:
           $ref: '#/components/responses/UnexpectedError'
 
@@ -726,6 +759,11 @@ components:
       type: apiKey
       in: header
       name: X-CSRF-Token
+
+    ottAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 
     adminAuth:
       type: apiKey
