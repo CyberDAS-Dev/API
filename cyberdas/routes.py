@@ -7,6 +7,7 @@ from .resources import (
     signup,
     login,
     logout,
+    ott,
 )
 from .services import (
     MailFactory,
@@ -38,3 +39,4 @@ def route(api):
     api.add_route('/account/login/validate', login.Validator(mail_factory,
                                                              session_manager))
     api.add_route('/account/logout', logout.Logout(session_manager))
+    api.add_route('/account/ott', ott.Ott())
