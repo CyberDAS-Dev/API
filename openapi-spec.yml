@@ -179,9 +179,11 @@ paths:
 
     post:
       summary: Возвращает токен, позволяющий совершить одно действие без
-        предварительной регистрации.
+        предварительной регистрации или логина.
       tags:
         - Аутентификация
+      security: []
+      
 
       requestBody:
         $ref: '#/components/requestBodies/QuickAuth'
