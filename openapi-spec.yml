@@ -2,7 +2,7 @@ openapi: '3.0.2'
 
 info:
   title: CyberDAS API
-  version: '0.6'
+  version: '0.7'
   contact:
     email: api@cyberdas.net
 
@@ -15,6 +15,8 @@ tags:
     description: 'Всё, что относится к аутентификации и управлению идентичностями'
   - name: Очереди
     description: 'Логика очередей и массового обслуживания'
+  - name: Обратная связь
+    description: 'Механизмы для передачи обратной связи'
 
 paths:
 
@@ -481,6 +483,142 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
 
+  /feedback:
+
+    get:
+      summary: Возвращает список получателей обратной связи
+      tags:
+        - Обратная связь
+      security: []   # доступно без аутентификации
+
+      responses:
+        '200':
+          description: JSON-массив с получателями
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipients'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /feedback/{recipient}:
+
+    parameters:
+      - $ref: '#/components/parameters/recipient'
+
+    get:
+      summary: Возвращает информацию о получателе обратной связи
+      tags:
+        - Обратная связь
+      security: []   # доступно без аутентификации
+
+      responses:
+        '200':
+          description: JSON-объект с информацией о получателе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipient'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /feedback/{recipient}/items:
+
+    parameters:
+      - $ref: '#/components/parameters/recipient'
+
+    get:
+      summary: Вернуть принятые объекты обратной связи
+      tags:
+        - Обратная связь
+      security:
+        - adminAuth: [] # TODO: поменять при появлении ролей пользователей
+      
+      parameters:
+        - name: start_time
+          in: query
+          required: false
+          allowEmptyValue: false
+          description: Первый день для составления интервала дат
+          schema:
+            type: string
+            format: date
+            example: "2021-01-30"
+        - name: end_time
+          in: query
+          required: false
+          allowEmptyValue: false
+          description: Последний день для составления интервала дат
+          schema:
+            type: string
+            format: date
+            example: "2021-01-30"
+        - name: category
+          in: query
+          required: false
+          allowEmptyValue: false
+          description: Категория обращения
+          schema:
+            type: string
+      
+      responses:
+        '200':
+          description: JSON-массив с объектами обратной связи
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedbacks'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+    post:
+      summary: Отправить новый объект обратной связи
+      tags:
+        - Обратная связь
+      security:
+      - cookieAuth: []
+        csrfToken: []
+      - ottAuth: []
+
+      requestBody:
+        $ref: '#/components/requestBodies/Feedback'
+
+      responses:
+        '201':
+          description: Успешно отправлено
+        '401':
+          $ref: '#/components/responses/UnauthenticatedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /feedback/{recipient}/items/{id}:
+
+    parameters:
+      - $ref: '#/components/parameters/recipient'
+      - $ref: '#/components/parameters/id'
+
+    get:
+      summary: Возвращает информацию о запрошенном предмете обратной связи
+      tags:
+        - Обратная связь
+      security:
+        - adminAuth: [] # TODO: поменять при появлении ролей пользователей
+
+      responses:
+        '200':
+          description: JSON-объект с обратной связью
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedback'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+
 components: 
 
   schemas: 
@@ -561,6 +699,51 @@ components:
         $ref: '#/components/schemas/Slot'
       minItems: 1
 
+    Recipient:
+      type: object
+      properties:
+        name:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        categories:
+          description: Список категорий обращений, которые принимаются этим получателем
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - title
+        - description
+        - categories
+
+    Recipients:
+      type: array
+      items:
+        $ref: '#/components/schemas/Recipient'
+
+    Feedback:
+      type: object
+      properties:
+        id:
+          type: integer
+        category:
+          type: string
+        text:
+          type: string
+        user_id:
+          type: integer
+        created_at:
+          type: string
+          format: date
+
+    Feedbacks:
+      type: array
+      items:
+        $ref: '#/components/schemas/Feedback'
+
     Error:
       type: object
       properties:
@@ -630,6 +813,14 @@ components:
         из письма на {frontend}/{next}, а не обратно на API
       schema:
         type: string
+    recipient:
+        name: recipient
+        in: path
+        required: true
+        description: Имя получателя обратной связи
+        schema:
+          type: string
+          example: "studcom"
 
 
   requestBodies:
@@ -685,6 +876,15 @@ components:
           schema:
             # TODO: привести к формату [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902)
             $ref: './cyberdas/static/slotsPatch_schema.json'
+
+    Feedback:
+      description: JSON-объект, содержащий информацию для создания объекта 
+        обратной связи
+      required: true
+      content:
+        'application/json':
+          schema:
+            $ref: './cyberdas/static/feedback_schema.json'
 
 
   securitySchemes:
