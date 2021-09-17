@@ -8,7 +8,7 @@ class Logout(object):
     def __init__(self, ses_manager: SessionManager):
         self.ses_manager = ses_manager
 
-    def on_get(self, req: falcon.Request, resp: falcon.Response):
+    def on_post(self, req: falcon.Request, resp: falcon.Response):
         '''
         Обрабатывает запрос от авторизованного пользователя на завершение
         сессии.

@@ -162,7 +162,7 @@ paths:
 
   /account/logout:
 
-    get:
+    post:
       summary: Заканчивает сессию пользователя
       tags:
         - Аутентификация
