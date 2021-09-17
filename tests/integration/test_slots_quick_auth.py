@@ -42,6 +42,7 @@ def queueDB(defaultDB):
     yield defaultDB
 
 
+@patch('cyberdas.services.mail.Mail.send', new = MagicMock())
 def test_post_with_ott(client, dbses, queueDB):
     'Можно зарезервировать слот, использовав одноразовый токен'
     # Генерируем токен и используем его для записи
