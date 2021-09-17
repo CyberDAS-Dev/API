@@ -1,38 +1,32 @@
 {
-    "$schema": "http://json-schema.org/draft-06/schema#",
-    "$ref": "#/definitions/SignupRequest",
-    "definitions": {
-        "SignupRequest": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "format": "email"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "surname": {
-                    "type": "string"
-                },
-                "patronymic": {
-                    "type": "string"
-                },
-                "faculty_id": {
-                    "type": "integer"
-                },
-                "course": {
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "email",
-                "name",
-                "surname",
-                "faculty_id"
-            ],
-            "title": "SignupRequest"
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "email": {
+            "type": "string",
+            "format": "email"
+        },
+        "name": {
+            "type": "string"
+        },
+        "surname": {
+            "type": "string"
+        },
+        "patronymic": {
+            "type": "string"
+        },
+        "faculty_id": {
+            "type": "integer"
+        },
+        "course": {
+            "type": "integer"
         }
-    }
+    },
+    "required": [
+        "email",
+        "name",
+        "surname",
+        "faculty_id"
+    ],
+    "title": "SignupRequest"
 }

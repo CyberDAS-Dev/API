@@ -643,25 +643,7 @@ components:
       content:
         'application/json':
           schema:
-            type: object
-            properties:
-              email:
-                type: string
-              name:
-                type: string
-              surname:
-                type: string
-              patronymic:
-                type: string
-              faculty_id:
-                type: integer
-              course:
-                type: integer
-            required:
-              - email
-              - name
-              - surname
-              - faculty_id
+            $ref: './cyberdas/static/signup_schema.json'
 
     Login:
       description: JSON-объект, содержащий адрес почты для логина
@@ -669,12 +651,7 @@ components:
       content:
         'application/json':
           schema:
-            type: object
-            properties:
-              email:
-                type: string
-            required:
-              - email
+            $ref: './cyberdas/static/login_schema.json'
 
     QuickAuth:
       description: JSON-объект, содержащий адрес почты для логина или все 
@@ -684,22 +661,7 @@ components:
       content:
         'application/json':
           schema:
-            type: object
-            properties:
-              email:
-                type: string
-              name:
-                type: string
-              surname:
-                type: string
-              patronymic:
-                type: string
-              faculty_id:
-                type: integer
-              course:
-                type: integer
-            required:
-              - email
+            $ref: './cyberdas/static/quickAuth_schema.json'
     
     QueuePut:
       description: JSON-объект, содержащий информацию для создания очереди
@@ -707,24 +669,7 @@ components:
       content:
         'application/json':
           schema:
-            type: object
-            properties:
-              title:
-                type: string
-              description:
-                type: string
-              duration:
-                type: integer
-              waterfall:
-                type: boolean
-              only_once:
-                type: boolean
-            required:
-              - title
-              - description
-              - duration
-              - waterfall
-              - only_once
+            $ref: './cyberdas/static/queuePut_schema.json'
 
     SlotsPut:
       description: JSON-массив, содержащий datetime'ы для создания слотов
@@ -732,10 +677,8 @@ components:
       content:
         'application/json':
           schema:
-            type: array
-            items:
-              type: string
-              format: date-time
+            $ref: './cyberdas/static/slotsPut_schema.json'
+
 
     SlotsPatch:
       description: JSON-объект, содержащий datetime'ы для добавления новых слотов
@@ -744,10 +687,7 @@ components:
         'application/json':
           schema:
             # TODO: привести к формату [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902)
-            type: array
-            items:
-              type: string
-              format: date-time
+            $ref: './cyberdas/static/slotsPatch_schema.json'
 
 
   securitySchemes:

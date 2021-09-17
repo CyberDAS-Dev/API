@@ -1,0 +1,8 @@
+{
+    "$ref": "./signup_schema.json",
+    "additionalProperties": true,
+    "required": [
+        "email"
+    ],
+    "title": "QuickAuthRequest"
+}

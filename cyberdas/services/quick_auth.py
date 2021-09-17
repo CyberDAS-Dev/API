@@ -11,11 +11,11 @@ from cyberdas.services.mail import Mail
 from cyberdas.config import get_cfg
 
 with open(path.abspath('cyberdas/static/login_schema.json'), 'r') as f:
-    login_schema = json.load(f)['definitions']['LoginRequest']
+    login_schema = json.load(f)
     login_schema['additionalProperties'] = True
 
 with open(path.abspath('cyberdas/static/signup_schema.json'), 'r') as f:
-    signup_schema = json.load(f)['definitions']['SignupRequest']
+    signup_schema = json.load(f)
     # на случай если эндпоинт сам принимает какой-то POST запрос:
     signup_schema['additionalProperties'] = True
 

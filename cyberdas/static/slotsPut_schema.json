@@ -1,14 +1,8 @@
 {
-    "$schema": "http://json-schema.org/draft-06/schema#",
-    "$ref": "#/definitions/SlotsPutRequest",
-    "definitions": {
-        "SlotsPutRequest": {
-            "type": "array",
-            "items": {
-                "type": "string",
-                "format": "date-time"
-            },
-            "title": "SlotsPutRequest"
-        }
-    }
+    "type": "array",
+    "items": {
+        "type": "string",
+        "format": "date-time"
+    },
+    "title": "SlotsPutRequest"
 }

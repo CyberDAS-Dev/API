@@ -73,6 +73,13 @@ jobs:
       - name: Move new API specification
         working-directory: prod
         run: |
+          python3 -c "
+          with open('openapi-spec.yml', 'r+') as f:
+              d = f.read()
+              d = d.replace('./cyberdas/static/', './')
+              f.seek(0)
+              f.write(d)
+              f.truncate()"
           mv openapi-spec.yml cyberdas/static/openapi-spec.yml
       - name: Restart service
         run: |

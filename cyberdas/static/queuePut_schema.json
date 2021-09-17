@@ -1,35 +1,29 @@
 {
-    "$schema": "http://json-schema.org/draft-06/schema#",
-    "$ref": "#/definitions/QueuePutRequest",
-    "definitions": {
-        "QueuePutRequest": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "title": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "duration": {
-                    "type": "integer"
-                },
-                "waterfall": {
-                    "type": "boolean"
-                },
-                "only_once": {
-                    "type": "boolean"
-                }
-            },
-            "required": [
-                "title",
-                "description",
-                "duration",
-                "waterfall",
-                "only_once"
-            ],
-            "title": "QueuePutRequest"
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "title": {
+            "type": "string"
+        },
+        "description": {
+            "type": "string"
+        },
+        "duration": {
+            "type": "integer"
+        },
+        "waterfall": {
+            "type": "boolean"
+        },
+        "only_once": {
+            "type": "boolean"
         }
-    }
+    },
+    "required": [
+        "title",
+        "description",
+        "duration",
+        "waterfall",
+        "only_once"
+    ],
+    "title": "QueuePutRequest"
 }
