@@ -577,10 +577,7 @@ paths:
       summary: Отправить новый объект обратной связи
       tags:
         - Обратная связь
-      security:
-      - cookieAuth: []
-        csrfToken: []
-      - ottAuth: []
+      security: []
 
       requestBody:
         $ref: '#/components/requestBodies/Feedback'
@@ -588,8 +585,6 @@ paths:
       responses:
         '201':
           description: Успешно отправлено
-        '401':
-          $ref: '#/components/responses/UnauthenticatedError'
         default:
           $ref: '#/components/responses/UnexpectedError'
 
@@ -613,8 +608,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Feedback'
-        '401':
-          $ref: '#/components/responses/UnauthenticatedError'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
         default:
           $ref: '#/components/responses/UnexpectedError'
 
@@ -733,11 +728,17 @@ components:
           type: string
         text:
           type: string
-        user_id:
-          type: integer
+        email:
+          type: string
+          format: email
         created_at:
           type: string
           format: date
+      required:
+        - id
+        - category
+        - text
+        - created_at
 
     Feedbacks:
       type: array
