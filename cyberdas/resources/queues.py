@@ -23,20 +23,20 @@ class Item:
 
     auth = {'disabled': 1}
 
-    def on_get(self, req, resp, queueName):
+    def on_get(self, req, resp, queue):
         '''
         Возвращает информацию об определенной очереди
 
         Параметры:
 
-            queueName (required, in: path) - имя запрашиваемой очереди
+            queue (required, in: path) - имя запрашиваемой очереди
         '''
         dbses = req.context.session
 
-        queue = dbses.query(Queue).filter_by(name = queueName).first()
-        if queue is None:
+        queue_obj = dbses.query(Queue).filter_by(name = queue).first()
+        if queue_obj is None:
             resp.status = falcon.HTTP_404
             return
 
-        resp.media = queue.as_dict()
+        resp.media = queue_obj.as_dict()
         resp.status = falcon.HTTP_200

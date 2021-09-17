@@ -28,10 +28,10 @@ def route(api):
     '''
     api.add_static_route('/', path.abspath('cyberdas/static/'))
     api.add_route('/queues', queues.Collection())
-    api.add_route('/queues/{queueName}', queues.Item())
-    api.add_route('/queues/{queueName}/slots', slots.Collection())
-    api.add_route('/queues/{queueName}/slots/{slotId}', slots.Item())
-    api.add_route('/queues/{queueName}/slots/{slotId}/reserve',
+    api.add_route('/queues/{queue}', queues.Item())
+    api.add_route('/queues/{queue}/slots', slots.Collection())
+    api.add_route('/queues/{queue}/slots/{id}', slots.Item())
+    api.add_route('/queues/{queue}/slots/{id}/reserve',
                   slots.Reserve(mail_factory))
     api.add_route('/account/signup', signup.Sender(mail_factory))
     api.add_route('/account/signup/validate', signup.Validator(mail_factory))

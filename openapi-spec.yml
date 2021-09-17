@@ -230,10 +230,10 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
 
-  /queues/{queueName}:
+  /queues/{queue}:
 
     parameters:
-      - $ref: '#/components/parameters/queueName'
+      - $ref: '#/components/parameters/queue'
 
     get:
       summary: Возвращает информацию о запрошенной очереди
@@ -292,10 +292,10 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
 
-  /queues/{queueName}/slots:
+  /queues/{queue}/slots:
 
     parameters:
-      - $ref: '#/components/parameters/queueName'
+      - $ref: '#/components/parameters/queue'
 
     get:
       summary: Возвращает слоты в выбранной очереди в указанный промежуток дат
@@ -386,11 +386,11 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
 
-  /queues/{queueName}/slots/{slotId}:
+  /queues/{queue}/slots/{id}:
 
     parameters:
-      - $ref: '#/components/parameters/queueName'
-      - $ref: '#/components/parameters/slotId'
+      - $ref: '#/components/parameters/queue'
+      - $ref: '#/components/parameters/id'
 
     get:
       summary: Возвращает информацию о запрошенном слоте в очереди
@@ -427,11 +427,11 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
 
-  /queues/{queueName}/slots/{slotId}/reserve:
+  /queues/{queue}/slots/{id}/reserve:
 
     parameters:
-      - $ref: '#/components/parameters/queueName'
-      - $ref: '#/components/parameters/slotId'
+      - $ref: '#/components/parameters/queue'
+      - $ref: '#/components/parameters/id'
       - $ref: '#/components/parameters/emailNext'
 
     post:
@@ -598,19 +598,19 @@ components:
 
 
   parameters:
-    queueName:
-      name: queueName
+    queue:
+      name: queue
       in: path
       required: true
       description: Имя очереди
       schema:
         type: string
         example: "living"
-    slotId:
-      name: slotId
+    id:
+      name: id
       in: path
       required: true
-      description: ID запрашиваемого слота
+      description: ID запрашиваемого объекта
       schema:
         type: integer
         example: 23

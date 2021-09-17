@@ -15,13 +15,13 @@ class Collection:
 
     auth = {'disabled': 1}
 
-    def on_get(self, req, resp, queueName):
+    def on_get(self, req, resp, queue):
         '''
         Возвращает список с информацией о имеющихся слотах в очереди
 
         Параметры:
 
-            queueName (required, in: path) - имя запрашиваемой очереди
+            queue (required, in: path) - имя запрашиваемой очереди
 
             day (optional, in: query) - если представлен без параметра offset,
                 то возвращается информацию о слотах только за указанный день;
@@ -47,7 +47,7 @@ class Collection:
             raise falcon.HTTPBadRequest(description = 'Offset принимает значения от 1 до 90') # noqa
 
         # Базовый запрос - если нет параметров, то вернутся все слоты из очереди
-        slots = dbses.query(Slot).filter_by(queue_name = queueName)
+        slots = dbses.query(Slot).filter_by(queue_name = queue)
 
         # Если предоставлен только day, возвращаем слоты за указанный день
         if day is not None and offset is None:
@@ -75,20 +75,19 @@ class Item:
 
     auth = {'disabled': 1}
 
-    def on_get(self, req, resp, queueName, slotId):
+    def on_get(self, req, resp, queue, id):
         '''
         Возвращает информацию об определенном слоте в очереди
 
         Параметры:
 
-            queueName (required, in: path) - имя запрашиваемой очереди
+            queue (required, in: path) - имя запрашиваемой очереди
 
-            slotId (required, in: path) - идентификатор запрашиваемого слота
+            id (required, in: path) - идентификатор запрашиваемого слота
         '''
         dbses = req.context.session
 
-        slot = dbses.query(Slot).filter_by(queue_name = queueName,
-                                           id = slotId).first()
+        slot = dbses.query(Slot).filter_by(queue_name = queue, id = id).first()
         if slot is None:
             resp.status = falcon.HTTP_404
             return
@@ -101,7 +100,7 @@ reserve_mail_args = {
     'sender': 'notify',
     'subject': 'Запись в очередь',
     'template': 'slot_reserve',
-    'transaction': 'queues/{queueName}/slots/{slotId}/reserve',
+    'transaction': 'queues/{queue}/slots/{id}/reserve',
     'expires': False
 }
 
@@ -144,7 +143,7 @@ def send_notify_delete(req, resp, resource):
         mail_sender = resource.delete_mail
 
         user = dbses.query(User).filter_by(id = uid).first()
-        queue = dbses.query(Queue).filter_by(name = resp.context['queueName']).first() # noqa
+        queue = dbses.query(Queue).filter_by(name = resp.context['queue']).first() # noqa
 
         template_data = {'queue_title': queue.title.lower(),
                          'slot_date': format_time(resp.context['slot_date'])}
@@ -160,37 +159,36 @@ class Reserve:
         self.reserve_mail = mail_factory.new_transaction(**reserve_mail_args)
         self.delete_mail = mail_factory.new_template(**delete_mail_args)
 
-    def on_get(self, req, resp, queueName, slotId):
+    def on_get(self, req, resp, queue, id):
         '''
         Перенаправляет пользователей, нажавших на ссылку для отмены записи в
         письме, на нужный метод (так как при нажатии на ссылку в письме браузер
         может послать только GET-запрос)
         '''
         if req.get_param('token'):
-            self.on_delete(req, resp, queueName, slotId)
+            self.on_delete(req, resp, queue, id)
         else:
             raise falcon.HTTPMethodNotAllowed(['POST', 'DELETE'])
 
     @falcon.before(auth_on_post)
     @falcon.after(send_notify_reserve)
-    def on_post(self, req, resp, queueName, slotId):
+    def on_post(self, req, resp, queue, id):
         '''
         Резервирует слот за пользователем. Не позволяет зарезервировать слоты,
         которые предназначались на уже прошедшее время.
 
         Параметры:
 
-            queueName (required, in: path) - имя запрашиваемой очереди
+            queue (required, in: path) - имя запрашиваемой очереди
 
-            slotId (required, in: path) - идентификатор запрашиваемого слота
+            id (required, in: path) - идентификатор запрашиваемого слота
         '''
         dbses = req.context.session
         log = req.context.logger
         user = req.context.user
-        info = "uid %s, queueName %s, slotId %s" % (user['uid'], queueName, slotId) # noqa
+        info = "uid %s, queue %s, id %s" % (user['uid'], queue, id)
 
-        slot = dbses.query(Slot).filter_by(queue_name = queueName,
-                                           id = slotId).first()
+        slot = dbses.query(Slot).filter_by(queue_name = queue, id = id).first()
         if slot is None:
             resp.status = falcon.HTTP_404
             return
@@ -206,13 +204,13 @@ class Reserve:
             log.debug(f"[ЗАНЯТЫЙ СЛОТ] {info}")
             raise falcon.HTTPForbidden(description = 'Слот занят')
 
-        queue = dbses.query(Queue).filter_by(name = queueName).first()
-        resp.context['queue_title'] = queue.title
-        if queue.only_once or queue.only_one_active:
-            user_slots = dbses.query(Slot).filter_by(queue_name = queueName,
+        queue_obj = dbses.query(Queue).filter_by(name = queue).first()
+        resp.context['queue_title'] = queue_obj.title
+        if queue_obj.only_once or queue_obj.only_one_active:
+            user_slots = dbses.query(Slot).filter_by(queue_name = queue,
                                                      user_id = user['uid'])
         # Для `only_once` очередей проверяем, что пользователь не имеет записей
-        if queue.only_once:
+        if queue_obj.only_once:
             if len(user_slots.all()) > 0:
                 log.debug(f"[ONLY ONCE] {info}")
                 raise falcon.HTTPForbidden(
@@ -220,7 +218,7 @@ class Reserve:
                 )
         # Для `only_one_active` очередей проверяем, что пользователь не имеет
         # будущих записей
-        if queue.only_one_active:
+        if queue_obj.only_one_active:
             active_slots = user_slots.filter(Slot.time > datetime.now())
             if len(active_slots.all()) > 0:
                 log.debug(f"[ONLY ONE ACTIVE] {info}")
@@ -234,24 +232,23 @@ class Reserve:
 
     @falcon.before(auth_on_token('notify'))
     @falcon.after(send_notify_delete)
-    def on_delete(self, req, resp, queueName, slotId):
+    def on_delete(self, req, resp, queue, id):
         '''
         Убирает резерв слота. Не позволяет убрать резерв со слотов, которые
         предназначались на уже прошедшее время.
 
         Параметры:
 
-            queueName (required, in: path) - имя запрашиваемой очереди
+            queue (required, in: path) - имя запрашиваемой очереди
 
-            slotId (required, in: path) - идентификатор запрашиваемого слота
+            id (required, in: path) - идентификатор запрашиваемого слота
         '''
         dbses = req.context.session
         log = req.context.logger
         user = req.context.user
-        info = "uid %s, queueName %s, slotId %s" % (user['uid'], queueName, slotId) # noqa
+        info = "uid %s, queue %s, id %s" % (user['uid'], queue, id)
 
-        slot = dbses.query(Slot).filter_by(queue_name = queueName,
-                                           id = slotId).first()
+        slot = dbses.query(Slot).filter_by(queue_name = queue, id = id).first()
         if slot is None:
             resp.status = falcon.HTTP_404
             return
@@ -278,4 +275,4 @@ class Reserve:
         slot.user_id = None
         log.info(f"[БРОНЬ УДАЛЕНА] {info}")
         resp.status = falcon.HTTP_204
-        resp.context['queueName'] = queueName
+        resp.context['queue'] = queue
