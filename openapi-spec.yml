@@ -552,8 +552,7 @@ components:
           type: boolean
       required:
         - id
-        - queueName
-        - date
+        - time
         - free
 
     Slots:
