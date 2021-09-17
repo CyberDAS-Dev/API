@@ -1,6 +1,8 @@
 import pytest
+from time import sleep
+from unittest.mock import MagicMock, patch
+
 import falcon
-from unittest.mock import MagicMock
 
 from cyberdas.services.ott import generate_ott, validate_ott, support_ott
 
@@ -47,6 +49,14 @@ class TestGeneration:
     def test_validation(self):
         'Если токен некорректный, возвращается False'
         deciph = validate_ott("lol123asd")
+        assert deciph is False
+
+    @patch('cyberdas.services.ott.max_age', new = 0)
+    def test_max_age(self):
+        'Токен истекает через некоторое время'
+        tok = generate_ott(self.data)
+        sleep(1)
+        deciph = validate_ott(tok)
         assert deciph is False
 
 
