@@ -441,9 +441,7 @@ paths:
       security:
       - cookieAuth: []
         csrfToken: []
-
-      requestBody:
-        $ref: '#/components/requestBodies/QuickAuth'
+      - ottAuth: []
 
       responses:
         '201':
@@ -657,7 +655,7 @@ components:
       description: JSON-объект, содержащий адрес почты для логина или все 
         данные, необходимые для регистрации. Позволяет пропустить регистрацию 
         и использовать некоторые защищенные эндпоинты без неё.
-      required: false
+      required: true
       content:
         'application/json':
           schema:

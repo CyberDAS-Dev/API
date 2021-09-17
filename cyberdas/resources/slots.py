@@ -4,10 +4,7 @@ import falcon
 from sqlalchemy import Date, cast
 
 from cyberdas.models import Slot, Queue, User
-from cyberdas.services import (
-    MailFactory,
-    auth_on_post, auth_on_token
-)
+from cyberdas.services import MailFactory, support_ott, auth_on_token
 from cyberdas.utils.format_time import format_time
 
 
@@ -170,7 +167,7 @@ class Reserve:
         else:
             raise falcon.HTTPMethodNotAllowed(['POST', 'DELETE'])
 
-    @falcon.before(auth_on_post)
+    @falcon.before(support_ott)
     @falcon.after(send_notify_reserve)
     def on_post(self, req, resp, queue, id):
         '''

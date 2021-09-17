@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import falcon
 
 from cyberdas.models import Queue, Slot
+from cyberdas.services import generate_ott
 
 
 URI = '/queues/music/slots/2/reserve'
@@ -41,6 +42,22 @@ def queueDB(defaultDB):
     yield defaultDB
 
 
+def test_post_with_ott(client, dbses, queueDB):
+    'Можно зарезервировать слот, использовав одноразовый токен'
+    # Генерируем токен и используем его для записи
+    ott = generate_ott({'uid': 2})
+    resp = client.simulate_post(
+        URI,
+        headers = {'Authorization': f'Bearer {ott}'}
+    )
+    assert resp.status == falcon.HTTP_201
+
+    # Проверяем, что мы записались
+    with queueDB.session as dbses:
+        slot = dbses.query(Slot).filter_by(queue_name = 'music', id = 2).first()
+        assert slot.user_id == 2
+
+
 def test_get_unsupported(client):
     'GET без каких-либо параметров возвращает HTTP 405'
     resp = client.simulate_get(URI)
@@ -50,8 +67,7 @@ def test_get_unsupported(client):
 @patch('cyberdas.resources.slots.Reserve.on_delete', new = delete_mock)
 def test_delete_from_get(client):
     'GET при указании токена совершает внутренний редирект на DELETE'
-    resp = client.simulate_get(URI, params = {'token': '123'})
-    print(resp.status)
+    client.simulate_get(URI, params = {'token': '123'})
     delete_mock.assert_called_once()
 
 
