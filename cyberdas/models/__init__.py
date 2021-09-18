@@ -4,5 +4,12 @@ from .user import User
 from .session import Session
 from .queue import Queue
 from .slot import Slot
+from .feedback import Feedback
+from .recipient import Recipient
+from .feedback_category import FeedbackCategory
 
-__all__ = ['Base', 'Faculty', 'User', 'Session', 'Queue', 'Slot']
+__all__ = [
+    'Base', 'Faculty', 'User', 'Session',
+    'Queue', 'Slot',
+    'Recipient', 'FeedbackCategory', 'Feedback'
+]
