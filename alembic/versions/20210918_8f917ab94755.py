@@ -35,7 +35,7 @@ def upgrade():
     )
     op.create_table('feedbacks',
     sa.Column('recipient_name', sa.String(), nullable=False),
-    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.Integer(), nullable=False, autoincrement=True),
     sa.Column('category', sa.String(), nullable=False),
     sa.Column('text', sa.Text(), nullable=False),
     sa.Column('email', sqlalchemy_utils.types.email.EmailType(length=255), nullable=True),
