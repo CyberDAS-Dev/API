@@ -161,3 +161,10 @@ class TestFeedbackCollection:
         data = {'text': 'bla', 'category': 'bla'}
         resp = client.simulate_post(self.URI, json = data)
         assert resp.status == falcon.HTTP_400
+
+    def test_post_recipient(self, client, feedbackDB):
+        'Запрос на имя несуществующего получателя возвращает HTTP 404'
+        data = {'text': 'bla', 'category': 'bla'}
+        resp = client.simulate_post(self.URI.replace('/admin/', '/bla/'),
+                                    json = data)
+        assert resp.status == falcon.HTTP_404

@@ -78,6 +78,10 @@ class FeedbackCollection:
         dbses = req.context.session
         log = req.context.logger
 
+        # Проверяем, что получатель существует
+        if dbses.query(Recipient).filter_by(name = recipient).first() is None:
+            raise falcon.HTTPNotFound()
+
         # Получаем пользовательские данные
         data = req.get_media()
 
