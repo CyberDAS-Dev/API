@@ -8,6 +8,7 @@ from .resources import (
     login,
     logout,
     ott,
+    feedback,
 )
 from .services import (
     MailFactory,
@@ -40,3 +41,6 @@ def route(api):
                                                              session_manager))
     api.add_route('/account/logout', logout.Logout(session_manager))
     api.add_route('/account/ott', ott.Ott())
+    api.add_route('/feedback', feedback.RecipientCollection())
+    api.add_route('/feedback/{recipient}', feedback.RecipientItem())
+    api.add_route('/feedback/{recipient}/items', feedback.FeedbackCollection())
