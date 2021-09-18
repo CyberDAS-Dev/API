@@ -41,10 +41,10 @@ def feedbackDB(defaultDB):
         FeedbackCategory(recipient_name = 'studcom', name = 'предложение')
     ]
     studcom_feedbacks = [
-        Feedback(id = 1, recipient_name = 'studcom', category = 'жалоба',
+        Feedback(recipient_name = 'studcom', category = 'жалоба',
                  text = 'blabla', email = 'blabla2@mail.com',
                  created_at = datetime_range[2]),
-        Feedback(id = 2, recipient_name = 'studcom', category = 'предложение',
+        Feedback(recipient_name = 'studcom', category = 'предложение',
                  text = 'blabla', created_at = datetime_range[4]),
     ]
 
@@ -133,7 +133,7 @@ class TestFeedbackCollection:
         resp = client.simulate_post(self.URI, json = data)
         assert resp.status == falcon.HTTP_400
 
-    def test_post(self, client, dbses):
+    def test_post(self, client, feedbackDB, dbses):
         'POST создаёт новый предмет в коллекции'
         email, text, category = 'user@mail.com', 'bla? bla!', 'жалоба'
         data = {'email': email, 'text': text, 'category': category}
@@ -146,7 +146,7 @@ class TestFeedbackCollection:
         assert item.text == text
         assert item.category == category
 
-    def test_post_without_email(self, client, dbses):
+    def test_post_without_email(self, client, feedbackDB, dbses):
         'При отправке запроса необязательно указывать адрес почты'
         text, category = 'bla-bla-bla!', 'предложение'
         data = {'text': text, 'category': category}
@@ -156,7 +156,7 @@ class TestFeedbackCollection:
         item = dbses.query(Feedback).filter_by(recipient_name = 'admin', id = 4)
         assert item.first().email is None
 
-    def test_post_category(self, client):
+    def test_post_category(self, client, feedbackDB):
         'Запрос с несуществующей категорией возвращает HTTP 400'
         data = {'text': 'bla', 'category': 'bla'}
         resp = client.simulate_post(self.URI, json = data)
