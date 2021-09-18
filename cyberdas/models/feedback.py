@@ -56,7 +56,7 @@ class Feedback(Base, Serializable):
     )
     recipient_name = Column(String, ForeignKey('recipients.name'),
                             primary_key = True)
-    id = Column(Integer, primary_key = True)
+    id = Column(Integer, primary_key = True, autoincrement = True)
     category = Column(String, nullable = False)
     text = Column(Text, nullable = False)
     email = Column(EmailType, nullable = True)
