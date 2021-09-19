@@ -25,8 +25,7 @@
     "required": [
         "email",
         "name",
-        "surname",
-        "faculty_id"
+        "surname"
     ],
     "title": "SignupRequest"
 }

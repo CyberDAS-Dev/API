@@ -34,10 +34,10 @@ class User(Base):
             patronymic - Nullable Text
                 Хранит отчество пользователя, необязательное поле
 
-            faculty_id - Integer
+            faculty_id - Nullable Integer
                 Хранит идентификатор факультета, на котором учится пользователя
 
-            course - Integer
+            course - Nullable Integer
                 Хранит текущий курс обучения пользователя
 
             quick - Boolean
@@ -74,7 +74,7 @@ class User(Base):
     name = Column(Text, nullable = False)
     surname = Column(Text, nullable = False)
     patronymic = Column(Text, nullable = True)
-    faculty_id = Column(Integer, ForeignKey('faculties.id'), nullable = False)
+    faculty_id = Column(Integer, ForeignKey('faculties.id'), nullable = True)
     course = Column(Integer, nullable = True)
     quick = Column(Boolean, nullable = False, server_default = 'false')
     created_at = Column(DateTime, nullable = False, server_default = func.now())
