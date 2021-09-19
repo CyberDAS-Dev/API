@@ -1,6 +1,5 @@
 {
     "type": "object",
-    "additionalProperties": false,
     "properties": {
         "email": {
             "type": "string",
@@ -19,7 +18,8 @@
             "type": "integer"
         },
         "course": {
-            "type": "integer"
+            "type": "integer",
+            "enum": [1, 2, 3, 4, 5, 6]
         }
     },
     "required": [

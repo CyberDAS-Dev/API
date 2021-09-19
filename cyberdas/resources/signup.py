@@ -23,6 +23,7 @@ class Sender:
 
     with open(path.abspath('cyberdas/static/signup_schema.json'), 'r') as f:
         signup_schema = json.load(f)
+        signup_schema['additionalProperties'] = False
 
     def __init__(self, mail_factory: MailFactory):
         self.mail = mail_factory.new_transaction(**mail_args)

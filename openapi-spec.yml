@@ -714,27 +714,18 @@ components:
 
     User:
       type: object
+      title: 'User'
+      allOf:
+        - $ref: './cyberdas/static/signup_schema.json'
       properties:
         id:
-          type: integer
-        name: 
-          type: string
-        surname:
-          type: string
-        patronymic:
-          type: string
-        faculty:
-          type: string
-        course:
           type: integer
         createdAt:
           type: string
           format: date
       required:
         - id
-        - name
-        - surname
-        - faculty
+        - createdAt
 
     Queue:
       type: object
