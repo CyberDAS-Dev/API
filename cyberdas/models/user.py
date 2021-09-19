@@ -40,6 +40,12 @@ class User(Base):
             course - Nullable Integer
                 Хранит текущий курс обучения пользователя
 
+            building - Nullable Integer
+                Хранит корпус проживания пользователя
+
+            room - Nullable Integer
+                Хранит комнату проживания пользователя
+
             quick - Boolean
                 Флаг, сигнализирующий о том, что пользователь не проходил полной
                 процедуры регистрации, а был зарегистрирован с помощью
@@ -76,6 +82,8 @@ class User(Base):
     patronymic = Column(Text, nullable = True)
     faculty_id = Column(Integer, ForeignKey('faculties.id'), nullable = True)
     course = Column(Integer, nullable = True)
+    building = Column(Integer, nullable = True)
+    room = Column(Integer, nullable = True)
     quick = Column(Boolean, nullable = False, server_default = 'false')
     created_at = Column(DateTime, nullable = False, server_default = func.now())
     last_session = Column(DateTime, nullable = False,
@@ -84,3 +92,4 @@ class User(Base):
     faculty = relationship('Faculty', back_populates = 'population')
     sessions = relationship('Session', back_populates = 'user')
     slots = relationship('Slot', back_populates = 'holder')
+    maintenances = relationship('Maintenance', back_populates = 'user')
