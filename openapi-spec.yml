@@ -2,7 +2,7 @@ openapi: '3.0.2'
 
 info:
   title: CyberDAS API
-  version: '0.7'
+  version: '0.8'
   contact:
     email: api@cyberdas.net
 
@@ -17,6 +17,8 @@ tags:
     description: 'Логика очередей и массового обслуживания'
   - name: Обратная связь
     description: 'Механизмы для передачи обратной связи'
+  - name: Технические услуги
+    description: 'Сервис записи на оказание тех. услуг'
 
 paths:
 
@@ -613,6 +615,98 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
 
+  /maintenance:
+
+    get:
+      summary: Возвращает заявки на оказание услуг
+      tags:
+        - Технические услуги
+      security:
+        - adminAuth: [] # TODO: поменять при появлении ролей пользователей
+      
+      parameters:
+        - name: start_time
+          in: query
+          required: false
+          allowEmptyValue: false
+          description: Первый день для составления интервала дат
+          schema:
+            type: string
+            format: date
+            example: "2021-01-30"
+        - name: end_time
+          in: query
+          required: false
+          allowEmptyValue: false
+          description: Последний день для составления интервала дат
+          schema:
+            type: string
+            format: date
+            example: "2021-01-30"
+        - name: category
+          in: query
+          required: false
+          allowEmptyValue: false
+          description: Категория заявки
+          schema:
+            type: string
+            enum: ['plumber', 'electrician', 'carpenter']
+      
+      responses:
+        '200':
+          description: JSON-массив с заявки на тех. услуги
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Maintenances'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+    post:
+      summary: Создать новую заявку на тех. услуги
+      tags:
+        - Технические услуги
+      security:
+      - cookieAuth: []
+        csrfToken: []
+      - ottAuth: []
+
+      requestBody:
+        $ref: '#/components/requestBodies/Maintenance'
+
+      responses:
+        '201':
+          description: Успешно отправлено
+        '442':
+          $ref:  "#/components/responses/NotEnoughPersonalDataError"
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+
+  /maintenance/{id}:
+
+    parameters:
+      - $ref: '#/components/parameters/id'
+
+    get:
+      summary: Возвращает информацию о конкретной заявке
+      tags:
+        - Технические услуги
+      security:
+        - adminAuth: [] # TODO: поменять при появлении ролей пользователей
+
+      responses:
+        '200':
+          description: JSON-объект заявки на тех. услуги
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Maintenance'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
 
 components: 
 
@@ -744,6 +838,40 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Feedback'
+
+    Maintenance:
+      type: object
+      properties:
+        id:
+          type: integer
+        category:
+          type: string
+          enum: ['plumber', 'electrician', 'carpenter']
+        building:
+          type: integer
+          enum: [1, 2]
+        room:
+          type: integer
+        text:
+          type: string
+        user_id:
+          type: integer
+        created_at:
+          type: string
+          format: date
+      required:
+        - id
+        - category
+        - building
+        - room
+        - text
+        - user_id
+        - created_at
+
+    Maintenances:
+      type: array
+      items:
+        $ref: '#/components/schemas/Maintenance'
 
     Error:
       type: object
@@ -899,6 +1027,15 @@ components:
         'application/json':
           schema:
             $ref: './cyberdas/static/feedback_schema.json'
+
+    Maintenance:
+      description: JSON-объект, содержащий информацию для создания заявки на
+        оказание технических услуг
+      required: true
+      content:
+        'application/json':
+          schema:
+            $ref: './cyberdas/static/maintenance_schema.json'
 
 
   securitySchemes:
