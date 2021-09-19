@@ -748,9 +748,9 @@ components:
     Error:
       type: object
       properties:
-        code:
+        title:
           type: string
-        message:
+        description:
           type: string
 
 
@@ -776,6 +776,19 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+    
+    NotEnoughPersonalDataError:
+      description: Недостаточно персональных данных
+      content:
+        application/json:
+          schema:
+            properties:
+              title:
+                type: string
+                enum: ['442 Not Enough Personal Data']
+              description:
+                type: string
+                example: 'faculty_id,course'
 
 
   parameters:
