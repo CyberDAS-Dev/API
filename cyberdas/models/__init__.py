@@ -7,9 +7,11 @@ from .slot import Slot
 from .feedback import Feedback
 from .recipient import Recipient
 from .feedback_category import FeedbackCategory
+from .maintenance import Maintenance
 
 __all__ = [
     'Base', 'Faculty', 'User', 'Session',
     'Queue', 'Slot',
-    'Recipient', 'FeedbackCategory', 'Feedback'
+    'Recipient', 'FeedbackCategory', 'Feedback',
+    'Maintenance',
 ]
