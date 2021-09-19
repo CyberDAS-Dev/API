@@ -82,13 +82,25 @@ class TestQuickAuth:
         do_quick_auth(req, data)
         assert req.context['user'] == {'uid': 1}
 
+    def test_login_data_added(self, req, dbses):
+        'Если пользователь предоставил новые данные, добавляем их'
+        old_user = dbses.query(User).filter_by(id = 1).first()
+        assert old_user.course is None
+
+        data = {'email': environ['REGISTERED_USER_EMAIL'], 'course': 4}
+        do_quick_auth(req, data)
+        assert req.context['user'] == {'uid': 1}
+
+        new_user = dbses.query(User).filter_by(id = 1).first()
+        assert new_user.course == 4
+        new_user.course = None  # teardown локального масштаба
+
     @pytest.mark.parametrize("data", [
         {"email": "badmail", "faculty_id": 1,
          "name": "Иван", "surname": "Иванов"},
         {"email": "hello@name.mail", "faculty_id": "bad",
          "name": "Иван", "surname": "Иванов"},
-        {"faculty_id": 1, "name": "Иван", "surname": "Иванов"},
-        {"email": "hello@name.mail", "name": "Иван", "surname": "Иванов"},
+        {"faculty_id": 1, "name": "Иван", "surname": "Иванов"}
     ])
     def test_signup_bad_data(self, req, data):
         '''

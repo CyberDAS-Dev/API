@@ -45,8 +45,15 @@ def _get_or_add_user(req: falcon.Request, data: dict):
     except ValidationError:
         raise falcon.HTTPUnauthorized()
 
+    # Чистим данные, так как additionalProperties = true
+    clean_data = {k: data[k] for k in signup_schema['properties'] if k in data}
+
     user = dbses.query(User).filter_by(email = data['email']).first()
     if user is not None:
+        # Обновляем данные пользователя, если он предоставил более свежие
+        for (key, item) in clean_data.items():
+            setattr(user, key, item)
+        dbses.flush()
         log.info('[QA][ЛОГИН] email %s uid %s' % (data['email'], user.id))
         req.context['user'] = {'uid': user.id}
         return
@@ -57,9 +64,7 @@ def _get_or_add_user(req: falcon.Request, data: dict):
     except ValidationError:
         raise falcon.HTTPUnauthorized()
 
-    # При регистрации такого пользователя его нужно отметить галочкой quick, но
-    # перед этим нужно почистить данные, так как additionalProperties = true
-    clean_data = {k: data[k] for k in signup_schema['properties'] if k in data}
+    # При регистрации такого пользователя его нужно отметить галочкой quick
     newUser = User(**clean_data, quick = True)
 
     dbses.add(newUser)
