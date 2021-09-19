@@ -1,0 +1,18 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "category": {
+            "type": "string",
+            "enum": ["plumber", "electrician", "carpenter"]
+        },
+        "text": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "category",
+        "text"
+    ],
+    "title": "MaintenanceRequest"
+}
