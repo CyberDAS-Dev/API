@@ -36,7 +36,10 @@ def support_ott(req: falcon.Request, resp: falcon.Response, resource, params):
         return
 
     # Извлекаем заголовок авторизации
-    auth_header = req.get_header('Authorization', required = True)
+    auth_header = req.get_header('Authorization')
+    if auth_header is None:
+        raise falcon.HTTPUnauthorized()
+
     splitted = auth_header.split(' ')
     if len(splitted) != 2:
         raise falcon.HTTPUnauthorized()
