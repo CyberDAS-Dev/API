@@ -679,6 +679,8 @@ paths:
       responses:
         '201':
           description: Успешно отправлено
+        '401':
+          $ref: '#/components/responses/UnauthenticatedError'
         '442':
           $ref:  "#/components/responses/NotEnoughPersonalDataError"
         default:
