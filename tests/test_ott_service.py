@@ -28,7 +28,7 @@ class MockReq:
         self.headers = headers
 
     def get_header(self, name, *args, **kwargs):
-        return self.headers[name]
+        return self.headers[name] if name in self.headers else None
 
     @property
     def uri(self):
@@ -75,10 +75,17 @@ class TestHook:
         f'Bearer {tokenized_context} blabla',
         f'Token {tokenized_context}',
         'Bearer baddata',
+        ''
     ])
     def test_bad_header(self, auth_header):
         'Если заголовок не соответствует требованиям, возвращается HTTP 401'
         req = MockReq(MagicMock(), headers = {'Authorization': auth_header})
+        with pytest.raises(falcon.HTTPUnauthorized):
+            support_ott(req, None, None, None)
+
+    def test_no_header(self):
+        'Если заголовок отсутствует, возвращается HTTP 401'
+        req = MockReq(MagicMock(), headers = {})
         with pytest.raises(falcon.HTTPUnauthorized):
             support_ott(req, None, None, None)
 
