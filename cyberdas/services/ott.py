@@ -38,19 +38,27 @@ def support_ott(req: falcon.Request, resp: falcon.Response, resource, params):
     # Извлекаем заголовок авторизации
     auth_header = req.get_header('Authorization')
     if auth_header is None:
-        raise falcon.HTTPUnauthorized()
+        raise falcon.HTTPUnauthorized(
+            description = 'В запросе отсутствует заголовок Authorization'
+        )
 
     splitted = auth_header.split(' ')
     if len(splitted) != 2:
-        raise falcon.HTTPUnauthorized()
+        raise falcon.HTTPUnauthorized(
+            description = 'Некорректные данные в заголовке Authorization'
+        )
 
     if splitted[0] != 'Bearer':
-        raise falcon.HTTPUnauthorized()
+        raise falcon.HTTPUnauthorized(
+            description = 'Неизвестный способ авторизации'
+        )
 
     # Извлекаем данные из токена
     content = validate_ott(splitted[1])
     if content is False:
-        raise falcon.HTTPUnauthorized()
+        raise falcon.HTTPUnauthorized(
+            description = 'Недействительный токен в заголовке Authorization'
+        )
 
     # То, что было в токене - передается в контекст запроса
     req.context.logger.info('[OTT][ИСПОЛЬЗОВАН] uid %s, resource %s'

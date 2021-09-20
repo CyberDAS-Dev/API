@@ -43,7 +43,9 @@ def _get_or_add_user(req: falcon.Request, data: dict):
     try:
         validate(data, schema = login_schema, format_checker = draft7_format_checker) # noqa
     except ValidationError:
-        raise falcon.HTTPUnauthorized()
+        raise falcon.HTTPUnauthorized(
+            description = 'Недостаточно данных в запросе для аутентификации'
+        )
 
     # Чистим данные, так как additionalProperties = true
     clean_data = {k: data[k] for k in signup_schema['properties'] if k in data}
@@ -62,7 +64,9 @@ def _get_or_add_user(req: falcon.Request, data: dict):
     try:
         validate(data, schema = signup_schema, format_checker = draft7_format_checker) # noqa
     except ValidationError:
-        raise falcon.HTTPUnauthorized()
+        raise falcon.HTTPUnauthorized(
+            description = 'Недостаточно данных в запросе для регистрации'
+        )
 
     # При регистрации такого пользователя его нужно отметить галочкой quick
     newUser = User(**clean_data, quick = True)
