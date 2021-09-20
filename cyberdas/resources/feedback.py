@@ -28,6 +28,7 @@ class RecipientCollection:
         recipients = dbses.query(Recipient).all()
 
         resp.media = [_format_recipient(rcp.as_dict(), rcp) for rcp in recipients] # noqa
+        resp.cache_control = ['max-age=7200']
         resp.status = falcon.HTTP_200
 
 
@@ -49,6 +50,7 @@ class RecipientItem:
             raise falcon.HTTPNotFound()
 
         resp.media = _format_recipient(rcp_obj.as_dict(), rcp_obj)
+        resp.cache_control = ['max-age=7200']
         resp.status = falcon.HTTP_200
 
 
