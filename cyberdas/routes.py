@@ -9,6 +9,7 @@ from .resources import (
     logout,
     ott,
     feedback,
+    maintenance,
 )
 from .services import (
     MailFactory,
@@ -44,3 +45,4 @@ def route(api):
     api.add_route('/feedback', feedback.RecipientCollection())
     api.add_route('/feedback/{recipient}', feedback.RecipientItem())
     api.add_route('/feedback/{recipient}/items', feedback.FeedbackCollection())
+    api.add_route('/maintenance', maintenance.MaintenanceCollection())
