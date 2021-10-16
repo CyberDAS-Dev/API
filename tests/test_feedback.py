@@ -1,6 +1,7 @@
 import pytest
 import json
 from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
 
 import falcon
 
@@ -120,6 +121,7 @@ class TestRecipientItem:
 class TestFeedbackCollection:
 
     URI = '/feedback/admin/items'
+    mail_mock = MagicMock()
 
     @pytest.mark.parametrize('data', [
         {'category': 'жалоба'},
@@ -168,3 +170,22 @@ class TestFeedbackCollection:
         resp = client.simulate_post(self.URI.replace('/admin/', '/bla/'),
                                     json = data)
         assert resp.status == falcon.HTTP_404
+
+    @patch('cyberdas.services.mail.mail.Mail.send', new = mail_mock)
+    def test_email_not_sent(self, client):
+        "Если для получателя не указана почта, письмо не отправляется"
+        email, text, category = 'user@mail.com', 'bla? bla!', 'жалоба'
+        data = {'email': email, 'text': text, 'category': category}
+        client.simulate_post(self.URI, json = data)
+
+        self.mail_mock.assert_not_called()
+
+    @patch('cyberdas.services.mail.mail.Mail.send', new = mail_mock)
+    def test_email_sent(self, client):
+        "Если для получателя указана почта, письмо отправляется"
+        email, text, category = 'user@mail.com', 'bla? bla!', 'жалоба'
+        data = {'email': email, 'text': text, 'category': category}
+        client.simulate_post(self.URI.replace('/admin/', '/studcom/'),
+                             json = data)
+
+        self.mail_mock.assert_called_once()

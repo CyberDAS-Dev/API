@@ -5,6 +5,7 @@ import falcon
 from falcon.media.validators import jsonschema
 
 from cyberdas.models import Recipient, Feedback, FeedbackCategory
+from cyberdas.services import MailFactory
 
 
 def _format_recipient(rcp_dict, rcp_obj):
@@ -61,6 +62,13 @@ class FeedbackCollection:
     with open(path.abspath('cyberdas/static/feedback_schema.json'), 'r') as f:
         feedback_schema = json.load(f)
 
+    def __init__(self, mail_factory: MailFactory):
+        self.mail = mail_factory.new_template(
+            'notify',
+            'Обратная связь (CyberDAS)',
+            'feedback'
+        )
+
     @jsonschema.validate(feedback_schema)
     def on_post(self, req, resp, recipient):
         '''
@@ -81,7 +89,8 @@ class FeedbackCollection:
         log = req.context.logger
 
         # Проверяем, что получатель существует
-        if dbses.query(Recipient).filter_by(name = recipient).first() is None:
+        rcp_obj = dbses.query(Recipient).filter_by(name = recipient).first()
+        if rcp_obj is None:
             raise falcon.HTTPNotFound()
 
         # Получаем пользовательские данные
@@ -105,3 +114,7 @@ class FeedbackCollection:
         log.info('[FEEDBACK][НОВЫЙ] recipient %s, category %s, id %s'
                  % (recipient, data['category'], new_item.id))
         resp.status = falcon.HTTP_201
+
+        # Если указан ящик на который нужно пересылать письма, пересылаем
+        if rcp_obj.email is not None:
+            self.mail.send(rcp_obj.email, log, template_data=data)

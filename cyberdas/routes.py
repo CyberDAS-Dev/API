@@ -44,5 +44,6 @@ def route(api):
     api.add_route('/account/ott', ott.Ott())
     api.add_route('/feedback', feedback.RecipientCollection())
     api.add_route('/feedback/{recipient}', feedback.RecipientItem())
-    api.add_route('/feedback/{recipient}/items', feedback.FeedbackCollection())
+    api.add_route('/feedback/{recipient}/items',
+                  feedback.FeedbackCollection(mail_factory))
     api.add_route('/maintenance', maintenance.MaintenanceCollection())
